@@ -1,11 +1,13 @@
-import { ColorNeo, mountColorNeo } from '../src';
+import { ColorNeo, attachColorNeo, mountColorNeo } from '../src';
 
 const inlineInput = document.querySelector<HTMLInputElement>('#inline-color');
 const modalInput = document.querySelector<HTMLInputElement>('#modal-color');
 const modeInput = document.querySelector<HTMLInputElement>('#mode-color');
+const attachedInput = document.querySelector<HTMLInputElement>('#attached-color');
 const inlineOutput = document.querySelector<HTMLDivElement>('#inline-output');
 const modalOutput = document.querySelector<HTMLDivElement>('#modal-output');
 const modeOutput = document.querySelector<HTMLDivElement>('#mode-output');
+const attachedOutput = document.querySelector<HTMLDivElement>('#attached-output');
 const popoverOutput = document.querySelector<HTMLDivElement>('#popover-output');
 const mountOutput = document.querySelector<HTMLDivElement>('#mount-output');
 const mountRoot = document.querySelector<HTMLDivElement>('#mount-root');
@@ -21,9 +23,11 @@ if (
   !inlineInput ||
   !modalInput ||
   !modeInput ||
+  !attachedInput ||
   !inlineOutput ||
   !modalOutput ||
   !modeOutput ||
+  !attachedOutput ||
   !popoverOutput ||
   !mountOutput ||
   !mountRoot ||
@@ -64,6 +68,13 @@ const modePicker = new ColorNeo(modeInput, {
   }
 });
 
+const [attachedPicker] = attachColorNeo('[data-color-picker]', {
+  onChange: (hex) => {
+    attachedOutput.textContent = `attachColorNeo value: ${hex}`;
+    attachedOutput.style.background = `${hex}22`;
+  }
+});
+
 const mountedPicker = mountColorNeo(mountRoot, {
   value: '#f59e0b',
   onChange: (hex) => {
@@ -75,6 +86,7 @@ const mountedPicker = mountColorNeo(mountRoot, {
 inlinePicker.setValue(inlineInput.value, true);
 modalPicker.setValue(modalInput.value, true);
 modePicker.setValue(modeInput.value, true);
+attachedPicker?.setValue(attachedInput.value, true);
 mountedPicker.setValue('#f59e0b', true);
 
 openButton.addEventListener('click', () => dialog.showModal());

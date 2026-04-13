@@ -87,6 +87,8 @@ import { attachColorNeo } from 'ss-color-neo';
 attachColorNeo('[data-color-picker]');
 ```
 
+This selector-based usage is also included in the demo page as a dedicated example.
+
 ## Options
 
 ```ts
@@ -106,6 +108,15 @@ pnpm dev
 ```
 
 The demo page opens at the Vite dev URL and includes both inline usage and a picker rendered inside an HTML dialog popup.
+
+Current demo coverage:
+
+- inline usage opened from a custom icon button
+- selector-based initialization with `attachColorNeo('[data-color-picker]')`
+- popup usage inside an HTML dialog
+- picker rendered inside a popover
+- built-in `hex-swatch-left` mode
+- direct parent-element mounting with `mountColorNeo`
 
 ## Automated checks
 
