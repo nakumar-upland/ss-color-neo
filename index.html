@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SS Color Neo Demo</title>
+    <style>
+      :root {
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        color: #0f172a;
+        background:
+          radial-gradient(circle at top left, rgba(245, 158, 11, 0.24), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.2), transparent 32%),
+          #f8fafc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .demo-shell {
+        width: min(920px, 100%);
+        border-radius: 28px;
+        padding: 32px;
+        background: rgba(255, 255, 255, 0.86);
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.14);
+        backdrop-filter: blur(14px);
+      }
+
+      .demo-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+
+      .demo-header h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        line-height: 0.95;
+      }
+
+      .demo-header p {
+        max-width: 440px;
+        margin: 0;
+        color: #475569;
+      }
+
+      .demo-button {
+        border: 0;
+        border-radius: 999px;
+        padding: 14px 18px;
+        background: #0f172a;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 18px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 20px;
+        background: rgba(241, 245, 249, 0.9);
+      }
+
+      .card label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .inline-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .icon-open-btn {
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 12px;
+        background: #0f172a;
+        color: #fff;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      dialog {
+        width: min(520px, calc(100vw - 32px));
+        border: 0;
+        border-radius: 24px;
+        padding: 0;
+        background: transparent;
+      }
+
+      dialog::backdrop {
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(6px);
+      }
+
+      .modal {
+        padding: 24px;
+        border-radius: 24px;
+        background: #ffffff;
+        box-shadow: 0 30px 80px rgba(15, 23, 42, 0.24);
+      }
+
+      .modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .modal-head h2 {
+        margin: 0;
+      }
+
+      .close-btn {
+        border: 0;
+        border-radius: 999px;
+        width: 36px;
+        height: 36px;
+        background: #e2e8f0;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .color-output {
+        margin-top: 14px;
+        min-height: 48px;
+        padding: 14px;
+        border-radius: 16px;
+        background: #f8fafc;
+        color: #334155;
+        font-size: 14px;
+      }
+
+      .card .demo-button {
+        margin-top: 2px;
+      }
+
+      #demo-popover {
+        width: min(420px, calc(100vw - 24px));
+        border: 0;
+        border-radius: 20px;
+        padding: 0;
+        background: transparent;
+      }
+
+      #demo-popover::backdrop {
+        background: rgba(15, 23, 42, 0.2);
+      }
+
+      .popover-shell {
+        padding: 20px;
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.2);
+      }
+
+      .popover-shell h3 {
+        margin: 0 0 6px;
+      }
+
+      .popover-shell p {
+        margin: 0;
+        font-size: 13px;
+        color: #64748b;
+      }
+
+      .popover-close {
+        margin-top: 14px;
+        border: 0;
+        border-radius: 10px;
+        padding: 8px 12px;
+        background: #e2e8f0;
+        color: #0f172a;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .mount-root {
+        min-height: 310px;
+        margin-top: 12px;
+        padding: 12px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.76);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-shell">
+      <div class="demo-header">
+        <div>
+          <h1>SS Color Neo</h1>
+          <p>A reusable color picker with a hex field, popup panel, color swatch, shade slider, and EyeDropper support when the browser exposes it.</p>
+        </div>
+        <button id="open-dialog" class="demo-button" type="button">Open Popup Demo</button>
+      </div>
+
+      <section class="demo-grid">
+        <div class="card">
+          <label for="inline-color">Inline usage</label>
+          <div class="inline-actions">
+            <input id="inline-color" value="#ff6b6b" />
+            <button id="inline-open" class="icon-open-btn" type="button" aria-label="Open inline color selector">🎨</button>
+          </div>
+          <div id="inline-output" class="color-output"></div>
+        </div>
+        <div class="card">
+          <label>Package install</label>
+          <div class="color-output">pnpm install ss-color-neo</div>
+        </div>
+        <div class="card">
+          <label>Button + Popover render</label>
+          <button id="open-popover" class="demo-button" type="button">Open Popover Demo</button>
+          <div id="popover-output" class="color-output">Click the button to render picker inside popover.</div>
+        </div>
+        <div class="card">
+          <label for="mode-color">Built-in mode: left swatch + hex</label>
+          <input id="mode-color" value="#0ea5e9" />
+          <div id="mode-output" class="color-output"></div>
+        </div>
+        <div class="card">
+          <label>Direct parent mount (no input)</label>
+          <div id="mount-output" class="color-output">Selector is mounted directly in the box below.</div>
+          <div id="mount-root" class="mount-root"></div>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="demo-dialog">
+      <div class="modal">
+        <div class="modal-head">
+          <h2>HTML Popup</h2>
+          <button id="close-dialog" class="close-btn" type="button">x</button>
+        </div>
+        <label for="modal-color">Color inside popup</label>
+        <input id="modal-color" value="#1d4ed8" />
+        <div id="modal-output" class="color-output"></div>
+      </div>
+    </dialog>
+
+    <div id="demo-popover" popover>
+      <div class="popover-shell" id="popover-root"></div>
+    </div>
+
+    <script type="module" src="/demo/main.ts"></script>
+  </body>
+</html>

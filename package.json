@@ -1,0 +1,47 @@
+{
+  "name": "ss-color-neo",
+  "version": "0.1.0",
+  "description": "A reusable JavaScript color picker with hex input, popup UI, swatch, hue slider, and EyeDropper support.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsup --config tsup.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "color-picker",
+    "javascript-plugin",
+    "eyedropper",
+    "hex-color",
+    "popup"
+  ],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.7.0",
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "esbuild": "0.18.20",
+    "jsdom": "^22.1.0",
+    "tsup": "7.2.0",
+    "typescript": "^5.8.3",
+    "vite": "^4.5.14",
+    "vitest": "^0.34.6"
+  }
+}
