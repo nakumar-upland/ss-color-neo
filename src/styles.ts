@@ -57,7 +57,7 @@ export const COLOR_NEO_CSS = `
 
 .color-neo-popup {
   --color-neo-popup-width: 260px;
-  --color-neo-swatch-height: 180px;
+  --color-neo-swatch-height: 168px;
   position: fixed;
   z-index: 9999;
   box-sizing: border-box;
@@ -75,17 +75,17 @@ export const COLOR_NEO_CSS = `
 
 .color-neo-popup--small {
   --color-neo-popup-width: 220px;
-  --color-neo-swatch-height: 140px;
+  --color-neo-swatch-height: 128px;
 }
 
 .color-neo-popup--medium {
   --color-neo-popup-width: 260px;
-  --color-neo-swatch-height: 180px;
+  --color-neo-swatch-height: 168px;
 }
 
 .color-neo-popup--large {
   --color-neo-popup-width: 320px;
-  --color-neo-swatch-height: 220px;
+  --color-neo-swatch-height: 208px;
 }
 
 .color-neo-popup[hidden] {
@@ -133,16 +133,27 @@ export const COLOR_NEO_CSS = `
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  width: 32px;
+  height: 32px;
   border: 0;
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 0;
   background: #0f172a;
   color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
   cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.color-neo-eyedropper:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.26);
+}
+
+.color-neo-eyedropper:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .color-neo-eyedropper-icon {
@@ -245,6 +256,38 @@ export const COLOR_NEO_CSS = `
   background: rgba(255,255,255,0.9);
   color: #0f172a;
   font-size: 14px;
+}
+
+.color-neo-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.color-neo-history[hidden] {
+  display: none;
+}
+
+.color-neo-history-swatch {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.14);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.color-neo-history-swatch:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.2), 0 4px 10px rgba(15, 23, 42, 0.18);
+}
+
+.color-neo-history-swatch:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 `;
 

@@ -140,8 +140,22 @@ type ColorNeoOptions = {
   closeOnSelect?: boolean;
   mode?: 'default' | 'hex-swatch-left';
   size?: 'small' | 'medium' | 'large';
+  historyStorageKey?: string;
   onChange?: (hex: string) => void;
 };
+```
+
+### Recent color history (LIFO)
+
+Every new selected color is saved to `localStorage` in LIFO order (newest first), de-duplicated, and shown as clickable swatches in the picker popup.
+
+- default storage key: `color-neo-history`
+- configure per picker with `historyStorageKey`
+
+```ts
+new ColorNeo('#brand-color', {
+  historyStorageKey: 'brand-color-history'
+});
 ```
 
 ## Local development

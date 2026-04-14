@@ -1,8 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ColorNeo } from '../src/color-neo';
 
 describe('ColorNeo', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it('supports built-in hex-swatch-left mode', () => {
     document.body.innerHTML = '<div id="app"><input id="color" value="#123456" /></div>';
     const input = document.querySelector<HTMLInputElement>('#color');
@@ -206,5 +210,44 @@ describe('ColorNeo', () => {
     expect(input.value).toBe('#fedcba');
 
     delete window.EyeDropper;
+  });
+
+  it('stores selected colors in LIFO order and renders history swatches', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#000000" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input);
+    picker.setValue('#112233', true);
+    picker.setValue('#445566', true);
+    picker.setValue('#112233', true);
+
+    expect(localStorage.getItem('color-neo-history')).toBe('["#112233","#445566"]');
+
+    const swatches = picker.historyRow.querySelectorAll<HTMLButtonElement>('.color-neo-history-swatch');
+    expect(swatches).toHaveLength(2);
+    expect(swatches.item(0).title).toBe('#112233');
+    expect(swatches.item(1).title).toBe('#445566');
+
+    swatches.item(1).click();
+    expect(input.value).toBe('#445566');
+  });
+
+  it('uses configurable localStorage key for color history', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#000000" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, { historyStorageKey: 'my-picker-history' });
+    picker.setValue('#abcdef', true);
+
+    expect(localStorage.getItem('my-picker-history')).toBe('["#abcdef"]');
+    expect(localStorage.getItem('color-neo-history')).toBe(null);
   });
 });

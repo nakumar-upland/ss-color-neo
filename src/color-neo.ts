@@ -6,6 +6,7 @@ export interface ColorNeoOptions {
   closeOnSelect?: boolean;
   mode?: 'default' | 'hex-swatch-left';
   size?: 'small' | 'medium' | 'large';
+  historyStorageKey?: string;
   onChange?: (hex: string) => void;
 }
 
@@ -34,6 +35,7 @@ export class ColorNeo {
   readonly previewChip: HTMLDivElement;
   readonly previewLabel: HTMLSpanElement;
   readonly eyeDropperButton: HTMLButtonElement;
+  readonly historyRow: HTMLDivElement;
 
   private hsv = hexToHsv('#000000');
   private isSyncing = false;
@@ -46,6 +48,8 @@ export class ColorNeo {
   private readonly boundDocumentClick: (event: MouseEvent) => void;
   private readonly boundEscape: (event: KeyboardEvent) => void;
   private readonly hexInputDebounceMs = 2000;
+  private readonly historyMaxItems = 7;
+  private readonly historyStorageKey: string;
   private hexInputTimer: number | null = null;
 
   constructor(target: string | HTMLInputElement | HTMLElement, options: ColorNeoOptions = {}) {
@@ -76,6 +80,7 @@ export class ColorNeo {
     this.input = input;
     this.options = {
       closeOnSelect: options.closeOnSelect ?? false,
+      historyStorageKey: options.historyStorageKey ?? 'color-neo-history',
       onChange: options.onChange,
       mode: options.mode ?? 'default',
       size: options.size ?? 'medium',
@@ -83,6 +88,7 @@ export class ColorNeo {
     };
     this.mode = this.options.mode ?? 'default';
     this.size = this.options.size ?? 'medium';
+    this.historyStorageKey = this.options.historyStorageKey ?? 'color-neo-history';
 
     this.input.classList.add('color-neo-input');
     this.input.spellcheck = false;
@@ -122,16 +128,14 @@ export class ColorNeo {
     this.eyeDropperButton = document.createElement('button');
     this.eyeDropperButton.type = 'button';
     this.eyeDropperButton.className = 'color-neo-eyedropper';
+    this.eyeDropperButton.title = 'Pick color';
+    this.eyeDropperButton.setAttribute('aria-label', 'Pick color');
     const eyeDropperIcon = document.createElement('span');
     eyeDropperIcon.className = 'color-neo-eyedropper-icon';
     eyeDropperIcon.setAttribute('aria-hidden', 'true');
     eyeDropperIcon.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M15.8 5.2a2.8 2.8 0 0 1 4 4l-2 2 1.2 1.2a1 1 0 0 1 0 1.4l-1.4 1.4a1 1 0 0 1-1.4 0L15 14l-6.7 6.7a4 4 0 0 1-2.8 1.2H3a1 1 0 0 1-1-1v-2.5a4 4 0 0 1 1.2-2.8L9.9 9 8.6 7.8a1 1 0 0 1 0-1.4L10 5a1 1 0 0 1 1.4 0l1.2 1.2 2-2zM4 19v1h1a2 2 0 0 0 1.4-.6l6.2-6.2-1.4-1.4L5.6 17.4A2 2 0 0 0 5 18.8V19H4z"/></svg>';
 
-    const eyeDropperLabel = document.createElement('span');
-    eyeDropperLabel.className = 'color-neo-eyedropper-label';
-    eyeDropperLabel.textContent = 'Pick';
-
-    this.eyeDropperButton.append(eyeDropperIcon, eyeDropperLabel);
+    this.eyeDropperButton.append(eyeDropperIcon);
     this.eyeDropperButton.hidden = !('EyeDropper' in window);
 
     topbar.append(preview, this.eyeDropperButton);
@@ -146,25 +150,25 @@ export class ColorNeo {
     const sliderWrap = document.createElement('div');
     sliderWrap.className = 'color-neo-slider-wrap';
 
-    const sliderLabel = document.createElement('div');
-    sliderLabel.className = 'color-neo-slider-label';
-    sliderLabel.textContent = 'Shade slider';
-
     this.hueSlider = document.createElement('input');
     this.hueSlider.className = 'color-neo-slider';
     this.hueSlider.type = 'range';
     this.hueSlider.min = '0';
     this.hueSlider.max = '360';
     this.hueSlider.value = '0';
+    this.hueSlider.setAttribute('aria-label', 'Shade slider');
 
-    sliderWrap.append(sliderLabel, this.hueSlider);
+    sliderWrap.append(this.hueSlider);
 
     this.popupInput = document.createElement('input');
     this.popupInput.className = 'color-neo-popup-input';
     this.popupInput.type = 'text';
     this.popupInput.setAttribute('aria-label', 'Hex color value');
 
-    this.popup.append(topbar, this.swatch, sliderWrap, this.popupInput);
+    this.historyRow = document.createElement('div');
+    this.historyRow.className = 'color-neo-history';
+
+    this.popup.append(topbar, this.swatch, sliderWrap, this.historyRow, this.popupInput);
 
     this.boundDocumentClick = (event: MouseEvent) => {
       const targetNode = event.target as Node | null;
@@ -182,6 +186,7 @@ export class ColorNeo {
 
     this.mount();
     this.bindEvents();
+    this.renderHistory();
 
     const initial = options.value ?? input.value ?? '#000000';
     this.setValue(initial);
@@ -412,6 +417,7 @@ export class ColorNeo {
     this.trigger.style.background = normalized;
 
     if (emitEvents) {
+      this.pushHistory(normalized);
       this.isSyncing = true;
       try {
         this.input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -421,6 +427,74 @@ export class ColorNeo {
       } finally {
         this.isSyncing = false;
       }
+    }
+  }
+
+  private renderHistory(colors = this.readHistory()): void {
+    this.historyRow.replaceChildren();
+    this.historyRow.hidden = colors.length === 0;
+
+    for (const color of colors) {
+      const swatchButton = document.createElement('button');
+      swatchButton.type = 'button';
+      swatchButton.className = 'color-neo-history-swatch';
+      swatchButton.style.background = color;
+      swatchButton.title = color;
+      swatchButton.setAttribute('aria-label', `Use recent color ${color}`);
+      swatchButton.addEventListener('click', () => {
+        this.setValue(color, true);
+      });
+      this.historyRow.append(swatchButton);
+    }
+  }
+
+  private pushHistory(hex: string): void {
+    const normalized = normalizeHex(hex);
+    const next = [normalized, ...this.readHistory().filter((value) => value !== normalized)].slice(0, this.historyMaxItems);
+    this.writeHistory(next);
+    this.renderHistory(next);
+  }
+
+  private readHistory(): string[] {
+    try {
+      const raw = window.localStorage.getItem(this.historyStorageKey);
+      if (!raw) {
+        return [];
+      }
+
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      const history: string[] = [];
+
+      for (const value of parsed) {
+        if (typeof value !== 'string' || !isValidHex(value)) {
+          continue;
+        }
+
+        const normalized = normalizeHex(value);
+        if (!history.includes(normalized)) {
+          history.push(normalized);
+        }
+
+        if (history.length >= this.historyMaxItems) {
+          break;
+        }
+      }
+
+      return history;
+    } catch {
+      return [];
+    }
+  }
+
+  private writeHistory(colors: string[]): void {
+    try {
+      window.localStorage.setItem(this.historyStorageKey, JSON.stringify(colors));
+    } catch {
+      // Ignore storage failures in restricted environments.
     }
   }
 }
