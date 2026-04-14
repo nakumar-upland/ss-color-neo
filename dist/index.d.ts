@@ -1,0 +1,72 @@
+interface ColorNeoOptions {
+    value?: string;
+    closeOnSelect?: boolean;
+    onChange?: (hex: string) => void;
+}
+type EyeDropperLike = {
+    open: () => Promise<{
+        sRGBHex: string;
+    }>;
+};
+declare global {
+    interface Window {
+        EyeDropper?: new () => EyeDropperLike;
+    }
+    interface HTMLElementEventMap {
+        'colorneo:change': CustomEvent<{
+            value: string;
+        }>;
+    }
+}
+declare class ColorNeo {
+    readonly input: HTMLInputElement;
+    readonly wrapper: HTMLDivElement;
+    readonly trigger: HTMLButtonElement;
+    readonly popup: HTMLDivElement;
+    readonly swatch: HTMLDivElement;
+    readonly handle: HTMLDivElement;
+    readonly hueSlider: HTMLInputElement;
+    readonly popupInput: HTMLInputElement;
+    readonly previewChip: HTMLDivElement;
+    readonly previewLabel: HTMLSpanElement;
+    readonly eyeDropperButton: HTMLButtonElement;
+    private hsv;
+    private isSyncing;
+    private readonly options;
+    private readonly boundDocumentClick;
+    private readonly boundEscape;
+    constructor(target: string | HTMLInputElement, options?: ColorNeoOptions);
+    open(): void;
+    close(): void;
+    toggle(): void;
+    destroy(): void;
+    setValue(nextValue: string, emitEvents?: boolean): void;
+    private mount;
+    private bindEvents;
+    private positionPopup;
+    private syncUi;
+}
+
+interface RGB {
+    r: number;
+    g: number;
+    b: number;
+}
+interface HSV {
+    h: number;
+    s: number;
+    v: number;
+}
+declare function clamp(value: number, min: number, max: number): number;
+declare function normalizeHex(value: string): string;
+declare function isValidHex(value: string): boolean;
+declare function rgbToHex({ r, g, b }: RGB): string;
+declare function hexToRgb(hex: string): RGB;
+declare function hsvToRgb({ h, s, v }: HSV): RGB;
+declare function rgbToHsv({ r, g, b }: RGB): HSV;
+declare function hexToHsv(hex: string): HSV;
+declare function hsvToHex(hsv: HSV): string;
+
+declare function attachColorNeo(selector: string, options?: ColorNeoOptions): ColorNeo[];
+
+export { ColorNeo, ColorNeoOptions, attachColorNeo, clamp, hexToHsv, hexToRgb, hsvToHex, hsvToRgb, isValidHex, normalizeHex, rgbToHex, rgbToHsv };

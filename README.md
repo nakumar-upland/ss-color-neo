@@ -16,6 +16,30 @@ SS Color Neo is a reusable JavaScript color picker inspired by tools like Colori
 pnpm install ss-color-neo
 ```
 
+If npm registry access is unavailable, install directly from GitHub:
+
+```bash
+pnpm add github:<owner>/ss-color-neo#<tag-or-commit>
+```
+
+Example:
+
+```bash
+pnpm add github:your-org/ss-color-neo#v0.1.0
+```
+
+You can also put it directly in `package.json`:
+
+```json
+{
+  "dependencies": {
+    "ss-color-neo": "github:your-org/ss-color-neo#v0.1.0"
+  }
+}
+```
+
+For GitHub installs, keep `dist/` committed in this repo so consumers can use the package without publishing to npm.
+
 ## Use in another project
 
 ```ts
