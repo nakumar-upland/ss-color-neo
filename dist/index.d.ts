@@ -1,5 +1,5 @@
 interface ColorNeoOptions {
-    value?: string;
+    color?: string;
     closeOnSelect?: boolean;
     mode?: 'default' | 'hex-swatch-left';
     size?: 'small' | 'medium' | 'large';
@@ -54,6 +54,7 @@ declare class ColorNeo {
     toggle(): void;
     destroy(): void;
     setValue(nextValue: string, emitEvents?: boolean): void;
+    setColor(nextColor: string, emitEvents?: boolean): void;
     private mount;
     private attachPopupToHost;
     private bindEvents;
@@ -88,5 +89,6 @@ declare function hsvToHex(hsv: HSV): string;
 
 declare function attachColorNeo(selector: string, options?: ColorNeoOptions): ColorNeo[];
 declare function mountColorNeo(parent: string | HTMLElement, options?: ColorNeoOptions): ColorNeo;
+declare function destroyColorNeo(target: ColorNeo | ColorNeo[] | null | undefined): void;
 
-export { ColorNeo, ColorNeoOptions, attachColorNeo, clamp, hexToHsv, hexToRgb, hsvToHex, hsvToRgb, isValidHex, mountColorNeo, normalizeHex, rgbToHex, rgbToHsv };
+export { ColorNeo, ColorNeoOptions, attachColorNeo, clamp, destroyColorNeo, hexToHsv, hexToRgb, hsvToHex, hsvToRgb, isValidHex, mountColorNeo, normalizeHex, rgbToHex, rgbToHsv };

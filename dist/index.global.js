@@ -7,6 +7,14 @@ var ColorNeo = (function (exports) {
   }
   function normalizeHex(value) {
     const raw = value.trim().replace(/^#/, "").toLowerCase();
+    const rgbMatch = value.trim().match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*[\d.]+)?\s*\)$/i);
+    if (rgbMatch) {
+      return rgbToHex({
+        r: Number(rgbMatch[1]),
+        g: Number(rgbMatch[2]),
+        b: Number(rgbMatch[3])
+      });
+    }
     if (raw.length === 3 && /^[0-9a-f]{3}$/i.test(raw)) {
       return `#${raw.split("").map((part) => part + part).join("")}`;
     }
@@ -443,8 +451,7 @@ var ColorNeo = (function (exports) {
         historyStorageKey: options.historyStorageKey ?? "color-neo-history",
         onChange: options.onChange,
         mode: options.mode ?? "default",
-        size: options.size ?? "medium",
-        value: options.value
+        size: options.size ?? "medium"
       };
       this.mode = this.options.mode ?? "default";
       this.size = this.options.size ?? "medium";
@@ -523,7 +530,7 @@ var ColorNeo = (function (exports) {
       this.mount();
       this.bindEvents();
       this.renderHistory();
-      const initial = options.value ?? input.value ?? "#000000";
+      const initial = options.color ?? input.value ?? "#000000";
       this.setValue(initial);
     }
     open(anchor) {
@@ -569,6 +576,9 @@ var ColorNeo = (function (exports) {
       const normalized = normalizeHex(nextValue);
       this.hsv = hexToHsv(normalized);
       this.syncUi(normalized, emitEvents);
+    }
+    setColor(nextColor, emitEvents = false) {
+      this.setValue(nextColor, emitEvents);
     }
     mount() {
       if (this.isInlineMount && this.mountContainer) {
@@ -774,10 +784,23 @@ var ColorNeo = (function (exports) {
     }
     return new ColorNeo(target, options);
   }
+  function destroyColorNeo(target) {
+    if (!target) {
+      return;
+    }
+    if (Array.isArray(target)) {
+      for (const picker of target) {
+        picker.destroy();
+      }
+      return;
+    }
+    target.destroy();
+  }
 
   exports.ColorNeo = ColorNeo;
   exports.attachColorNeo = attachColorNeo;
   exports.clamp = clamp;
+  exports.destroyColorNeo = destroyColorNeo;
   exports.hexToHsv = hexToHsv;
   exports.hexToRgb = hexToRgb;
   exports.hsvToHex = hsvToHex;
