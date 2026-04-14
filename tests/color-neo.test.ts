@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ColorNeo } from '../src/color-neo';
+import { destroyColorNeo } from '../src';
 
 describe('ColorNeo', () => {
   beforeEach(() => {
@@ -68,7 +69,7 @@ describe('ColorNeo', () => {
       throw new Error('mount container missing');
     }
 
-    const picker = new ColorNeo(mount, { value: '#22c55e' });
+    const picker = new ColorNeo(mount, { color: '#22c55e' });
 
     expect(picker.popup.parentElement).toBe(mount);
     expect(picker.popup.hidden).toBe(false);
@@ -137,6 +138,36 @@ describe('ColorNeo', () => {
     expect(picker.wrapper.contains(input)).toBe(true);
     expect(picker.popupInput.value).toBe('#336699');
     expect(picker.previewLabel.textContent).toBe('#336699');
+  });
+
+  it('prefers the color option during initialization', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#336699" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, { color: '#c0ffee' });
+
+    expect(input.value).toBe('#c0ffee');
+    expect(picker.popupInput.value).toBe('#c0ffee');
+    expect(picker.previewLabel.textContent).toBe('#c0ffee');
+  });
+
+  it('converts an rgb color option during initialization', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#336699" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, { color: 'rgb(255, 107, 107)' });
+
+    expect(input.value).toBe('#ff6b6b');
+    expect(picker.popupInput.value).toBe('#ff6b6b');
+    expect(picker.previewLabel.textContent).toBe('#ff6b6b');
   });
 
   it('emits updates when the value changes', () => {
@@ -249,5 +280,25 @@ describe('ColorNeo', () => {
 
     expect(localStorage.getItem('my-picker-history')).toBe('["#abcdef"]');
     expect(localStorage.getItem('color-neo-history')).toBe(null);
+  });
+
+  it('destroys a picker through the exported helper', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#000000" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, { color: '#123456' });
+
+    expect(picker.wrapper.isConnected).toBe(true);
+    expect(picker.popup.isConnected).toBe(true);
+
+    destroyColorNeo(picker);
+
+    expect(picker.wrapper.isConnected).toBe(false);
+    expect(picker.popup.isConnected).toBe(false);
+    expect(input.classList.contains('color-neo-input')).toBe(false);
   });
 });

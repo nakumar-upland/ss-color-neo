@@ -2,7 +2,7 @@ import { clamp, hexToHsv, hsvToHex, isValidHex, normalizeHex } from './color-uti
 import { ensureStyles } from './styles';
 
 export interface ColorNeoOptions {
-  value?: string;
+  color?: string;
   closeOnSelect?: boolean;
   mode?: 'default' | 'hex-swatch-left';
   size?: 'small' | 'medium' | 'large';
@@ -83,8 +83,7 @@ export class ColorNeo {
       historyStorageKey: options.historyStorageKey ?? 'color-neo-history',
       onChange: options.onChange,
       mode: options.mode ?? 'default',
-      size: options.size ?? 'medium',
-      value: options.value
+      size: options.size ?? 'medium'
     };
     this.mode = this.options.mode ?? 'default';
     this.size = this.options.size ?? 'medium';
@@ -188,7 +187,7 @@ export class ColorNeo {
     this.bindEvents();
     this.renderHistory();
 
-    const initial = options.value ?? input.value ?? '#000000';
+    const initial = options.color ?? input.value ?? '#000000';
     this.setValue(initial);
   }
 
@@ -243,6 +242,10 @@ export class ColorNeo {
     const normalized = normalizeHex(nextValue);
     this.hsv = hexToHsv(normalized);
     this.syncUi(normalized, emitEvents);
+  }
+
+  setColor(nextColor: string, emitEvents = false): void {
+    this.setValue(nextColor, emitEvents);
   }
 
   private mount(): void {

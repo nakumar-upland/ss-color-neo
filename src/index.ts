@@ -27,3 +27,18 @@ export function mountColorNeo(parent: string | HTMLElement, options?: ColorNeoOp
 
   return new ColorNeo(target, options);
 }
+
+export function destroyColorNeo(target: ColorNeo | ColorNeo[] | null | undefined): void {
+  if (!target) {
+    return;
+  }
+
+  if (Array.isArray(target)) {
+    for (const picker of target) {
+      picker.destroy();
+    }
+    return;
+  }
+
+  target.destroy();
+}

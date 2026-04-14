@@ -3,6 +3,7 @@ interface ColorNeoOptions {
     closeOnSelect?: boolean;
     mode?: 'default' | 'hex-swatch-left';
     size?: 'small' | 'medium' | 'large';
+    historyStorageKey?: string;
     onChange?: (hex: string) => void;
 }
 type EyeDropperLike = {
@@ -32,6 +33,7 @@ declare class ColorNeo {
     readonly previewChip: HTMLDivElement;
     readonly previewLabel: HTMLSpanElement;
     readonly eyeDropperButton: HTMLButtonElement;
+    readonly historyRow: HTMLDivElement;
     private hsv;
     private isSyncing;
     private popupAnchor;
@@ -43,6 +45,8 @@ declare class ColorNeo {
     private readonly boundDocumentClick;
     private readonly boundEscape;
     private readonly hexInputDebounceMs;
+    private readonly historyMaxItems;
+    private readonly historyStorageKey;
     private hexInputTimer;
     constructor(target: string | HTMLInputElement | HTMLElement, options?: ColorNeoOptions);
     open(anchor?: HTMLElement): void;
@@ -56,6 +60,10 @@ declare class ColorNeo {
     private positionPopup;
     private scheduleHexInputSync;
     private syncUi;
+    private renderHistory;
+    private pushHistory;
+    private readHistory;
+    private writeHistory;
 }
 
 interface RGB {

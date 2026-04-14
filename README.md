@@ -49,7 +49,7 @@ const input = document.querySelector('#brand-color');
 
 if (input instanceof HTMLInputElement) {
   new ColorNeo(input, {
-    value: '#ff6b6b',
+    color: '#ff6b6b',
     onChange: (hex) => {
       console.log('Selected color:', hex);
     }
@@ -67,7 +67,7 @@ const input = document.querySelector('#brand-color');
 if (input instanceof HTMLInputElement) {
   new ColorNeo(input, {
     mode: 'hex-swatch-left',
-    value: '#0ea5e9'
+    color: '#0ea5e9'
   });
 }
 ```
@@ -80,13 +80,11 @@ Use this when you want to render the full selector inside a container and not re
 import { mountColorNeo } from 'ss-color-neo';
 
 const picker = mountColorNeo('#picker-slot', {
-  value: '#22c55e',
+  color: '#22c55e',
   onChange: (hex) => {
     console.log('Mounted picker color:', hex);
   }
 });
-
-picker.setValue('#16a34a', true);
 ```
 
 ### Selector size options
@@ -136,13 +134,37 @@ This selector-based usage is also included in the demo page as a dedicated examp
 
 ```ts
 type ColorNeoOptions = {
-  value?: string;
+  color?: string;
   closeOnSelect?: boolean;
   mode?: 'default' | 'hex-swatch-left';
   size?: 'small' | 'medium' | 'large';
   historyStorageKey?: string;
   onChange?: (hex: string) => void;
 };
+```
+
+### Destroy a picker
+
+Each picker instance exposes `destroy()`.
+
+```ts
+const picker = new ColorNeo('#brand-color', {
+  color: '#ff6b6b'
+});
+
+picker.destroy();
+```
+
+You can also use the exported helper when you want explicit cleanup for one or many instances.
+
+```ts
+import { attachColorNeo, destroyColorNeo } from 'ss-color-neo';
+
+const pickers = attachColorNeo('[data-color-picker]', {
+  color: '#8b5cf6'
+});
+
+destroyColorNeo(pickers);
 ```
 
 ### Recent color history (LIFO)
@@ -176,6 +198,8 @@ Current demo coverage:
 - built-in `hex-swatch-left` mode
 - selector size demos: `small`, `medium`, and `large`
 - direct parent-element mounting with `mountColorNeo`
+- initialization with the `color` option
+- explicit destroy flow with `destroy()` and `destroyColorNeo(...)`
 
 ## Automated checks
 

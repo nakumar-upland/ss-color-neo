@@ -158,6 +158,11 @@
         margin-top: 2px;
       }
 
+      .demo-button-secondary {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+
       #demo-popover {
         width: min(420px, calc(100vw - 24px));
         border: 0;
@@ -248,6 +253,11 @@
           <div id="mode-output" class="color-output"></div>
         </div>
         <div class="card">
+          <label for="rgb-color">Initialize with RGB color</label>
+          <input id="rgb-color" value="rgb(255, 107, 107)" />
+          <div id="rgb-output" class="color-output"></div>
+        </div>
+        <div class="card">
           <label for="small-color">Selector size: small</label>
           <input id="small-color" value="#f97316" />
           <div id="small-output" class="color-output"></div>
@@ -263,8 +273,12 @@
           <div id="large-output" class="color-output"></div>
         </div>
         <div class="card">
-          <label>Direct parent mount (no input)</label>
-          <div id="mount-output" class="color-output">Selector is mounted directly in the box below.</div>
+          <label>Color option + destroy demo</label>
+          <div class="inline-actions" style="margin-bottom: 12px;">
+            <button id="mount-create" class="demo-button" type="button">Create picker</button>
+            <button id="mount-destroy" class="demo-button demo-button-secondary" type="button">Destroy picker</button>
+          </div>
+          <div id="mount-output" class="color-output">Mounted selector is initialized with the color option.</div>
           <div id="mount-root" class="mount-root"></div>
         </div>
       </section>

@@ -17,6 +17,18 @@ export function clamp(value: number, min: number, max: number): number {
 export function normalizeHex(value: string): string {
   const raw = value.trim().replace(/^#/, '').toLowerCase();
 
+  const rgbMatch = value
+    .trim()
+    .match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*[\d.]+)?\s*\)$/i);
+
+  if (rgbMatch) {
+    return rgbToHex({
+      r: Number(rgbMatch[1]),
+      g: Number(rgbMatch[2]),
+      b: Number(rgbMatch[3])
+    });
+  }
+
   if (raw.length === 3 && /^[0-9a-f]{3}$/i.test(raw)) {
     return `#${raw
       .split('')

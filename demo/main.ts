@@ -1,8 +1,9 @@
-import { ColorNeo, attachColorNeo, mountColorNeo } from '../src';
+import { ColorNeo, attachColorNeo, destroyColorNeo, mountColorNeo } from '../src';
 
 const inlineInput = document.querySelector<HTMLInputElement>('#inline-color');
 const modalInput = document.querySelector<HTMLInputElement>('#modal-color');
 const modeInput = document.querySelector<HTMLInputElement>('#mode-color');
+const rgbInput = document.querySelector<HTMLInputElement>('#rgb-color');
 const smallInput = document.querySelector<HTMLInputElement>('#small-color');
 const mediumInput = document.querySelector<HTMLInputElement>('#medium-color');
 const largeInput = document.querySelector<HTMLInputElement>('#large-color');
@@ -10,6 +11,7 @@ const attachedInput = document.querySelector<HTMLInputElement>('#attached-color'
 const inlineOutput = document.querySelector<HTMLDivElement>('#inline-output');
 const modalOutput = document.querySelector<HTMLDivElement>('#modal-output');
 const modeOutput = document.querySelector<HTMLDivElement>('#mode-output');
+const rgbOutput = document.querySelector<HTMLDivElement>('#rgb-output');
 const smallOutput = document.querySelector<HTMLDivElement>('#small-output');
 const mediumOutput = document.querySelector<HTMLDivElement>('#medium-output');
 const largeOutput = document.querySelector<HTMLDivElement>('#large-output');
@@ -17,6 +19,8 @@ const attachedOutput = document.querySelector<HTMLDivElement>('#attached-output'
 const popoverOutput = document.querySelector<HTMLDivElement>('#popover-output');
 const mountOutput = document.querySelector<HTMLDivElement>('#mount-output');
 const mountRoot = document.querySelector<HTMLDivElement>('#mount-root');
+const mountCreateButton = document.querySelector<HTMLButtonElement>('#mount-create');
+const mountDestroyButton = document.querySelector<HTMLButtonElement>('#mount-destroy');
 const inlineOpenButton = document.querySelector<HTMLButtonElement>('#inline-open');
 const dialog = document.querySelector<HTMLDialogElement>('#demo-dialog');
 const openButton = document.querySelector<HTMLButtonElement>('#open-dialog');
@@ -29,6 +33,7 @@ if (
   !inlineInput ||
   !modalInput ||
   !modeInput ||
+  !rgbInput ||
   !smallInput ||
   !mediumInput ||
   !largeInput ||
@@ -36,6 +41,7 @@ if (
   !inlineOutput ||
   !modalOutput ||
   !modeOutput ||
+  !rgbOutput ||
   !smallOutput ||
   !mediumOutput ||
   !largeOutput ||
@@ -43,6 +49,8 @@ if (
   !popoverOutput ||
   !mountOutput ||
   !mountRoot ||
+  !mountCreateButton ||
+  !mountDestroyButton ||
   !inlineOpenButton ||
   !dialog ||
   !openButton ||
@@ -55,83 +63,110 @@ if (
 }
 
 let popoverPicker: ColorNeo | null = null;
+let mountedPicker: ColorNeo | null = null;
+const mountOutputElement = mountOutput;
+const mountRootElement = mountRoot;
+
+function updateOutput(element: HTMLDivElement, label: string, hex: string): void {
+  element.textContent = `${label}: ${hex}`;
+  element.style.background = `${hex}22`;
+}
+
+function renderMountedPicker(): void {
+  destroyColorNeo(mountedPicker);
+  mountedPicker = mountColorNeo(mountRootElement, {
+    size: 'large',
+    color: '#f59e0b',
+    onChange: (hex) => {
+      updateOutput(mountOutputElement, 'Mounted selector value', hex);
+    }
+  });
+
+  updateOutput(mountOutputElement, 'Mounted selector value', '#f59e0b');
+}
 
 const inlinePicker = new ColorNeo(inlineInput, {
+  color: '#ff6b6b',
   onChange: (hex) => {
-    inlineOutput.textContent = `Inline picker value: ${hex}`;
-    inlineOutput.style.background = `${hex}22`;
+    updateOutput(inlineOutput, 'Inline picker value', hex);
   }
 });
 
 inlinePicker.trigger.style.display = 'none';
 
 const modalPicker = new ColorNeo(modalInput, {
+  color: '#1d4ed8',
   onChange: (hex) => {
-    modalOutput.textContent = `Popup picker value: ${hex}`;
-    modalOutput.style.background = `${hex}22`;
+    updateOutput(modalOutput, 'Popup picker value', hex);
   }
 });
 
 const modePicker = new ColorNeo(modeInput, {
+  color: '#0ea5e9',
   mode: 'hex-swatch-left',
   onChange: (hex) => {
-    modeOutput.textContent = `Mode picker value: ${hex}`;
-    modeOutput.style.background = `${hex}22`;
+    updateOutput(modeOutput, 'Mode picker value', hex);
+  }
+});
+
+const rgbPicker = new ColorNeo(rgbInput, {
+  color: 'rgb(255, 107, 107)',
+  onChange: (hex) => {
+    updateOutput(rgbOutput, 'RGB init value', hex);
   }
 });
 
 const smallPicker = new ColorNeo(smallInput, {
+  color: '#f97316',
   size: 'small',
   onChange: (hex) => {
-    smallOutput.textContent = `Small selector value: ${hex}`;
-    smallOutput.style.background = `${hex}22`;
+    updateOutput(smallOutput, 'Small selector value', hex);
   }
 });
 
 const mediumPicker = new ColorNeo(mediumInput, {
+  color: '#6366f1',
   size: 'medium',
   onChange: (hex) => {
-    mediumOutput.textContent = `Medium selector value: ${hex}`;
-    mediumOutput.style.background = `${hex}22`;
+    updateOutput(mediumOutput, 'Medium selector value', hex);
   }
 });
 
 const largePicker = new ColorNeo(largeInput, {
+  color: '#14b8a6',
   size: 'large',
   onChange: (hex) => {
-    largeOutput.textContent = `Large selector value: ${hex}`;
-    largeOutput.style.background = `${hex}22`;
+    updateOutput(largeOutput, 'Large selector value', hex);
   }
 });
 
 const [attachedPicker] = attachColorNeo('[data-color-picker]', {
+  color: '#8b5cf6',
   onChange: (hex) => {
-    attachedOutput.textContent = `attachColorNeo value: ${hex}`;
-    attachedOutput.style.background = `${hex}22`;
+    updateOutput(attachedOutput, 'attachColorNeo value', hex);
   }
 });
 
-const mountedPicker = mountColorNeo(mountRoot, {
-  size: 'large',
-  value: '#f59e0b',
-  onChange: (hex) => {
-    mountOutput.textContent = `Mounted selector value: ${hex}`;
-    mountOutput.style.background = `${hex}22`;
-  }
-});
-
-inlinePicker.setValue(inlineInput.value, true);
-modalPicker.setValue(modalInput.value, true);
-modePicker.setValue(modeInput.value, true);
-smallPicker.setValue(smallInput.value, true);
-mediumPicker.setValue(mediumInput.value, true);
-largePicker.setValue(largeInput.value, true);
-attachedPicker?.setValue(attachedInput.value, true);
-mountedPicker.setValue('#f59e0b', true);
+updateOutput(inlineOutput, 'Inline picker value', '#ff6b6b');
+updateOutput(modalOutput, 'Popup picker value', '#1d4ed8');
+updateOutput(modeOutput, 'Mode picker value', '#0ea5e9');
+updateOutput(rgbOutput, 'RGB init value', '#ff6b6b');
+updateOutput(smallOutput, 'Small selector value', '#f97316');
+updateOutput(mediumOutput, 'Medium selector value', '#6366f1');
+updateOutput(largeOutput, 'Large selector value', '#14b8a6');
+updateOutput(attachedOutput, 'attachColorNeo value', '#8b5cf6');
+renderMountedPicker();
 
 openButton.addEventListener('click', () => dialog.showModal());
 closeButton.addEventListener('click', () => dialog.close());
 inlineOpenButton.addEventListener('click', () => inlinePicker.open(inlineOpenButton));
+mountCreateButton.addEventListener('click', () => renderMountedPicker());
+mountDestroyButton.addEventListener('click', () => {
+  destroyColorNeo(mountedPicker);
+  mountedPicker = null;
+  mountOutputElement.textContent = 'Mounted selector destroyed.';
+  mountOutputElement.style.background = '#f8fafc';
+});
 
 openPopoverButton.addEventListener('click', () => {
   popoverRoot.innerHTML = `
@@ -153,15 +188,15 @@ openPopoverButton.addEventListener('click', () => {
 
   popoverPicker?.destroy();
   popoverPicker = new ColorNeo(popoverInput, {
+    color: '#16a34a',
     onChange: (hex) => {
-      popoverColorOutput.textContent = `Popover picker value: ${hex}`;
-      popoverColorOutput.style.background = `${hex}22`;
-      popoverOutput.textContent = `Popover current value: ${hex}`;
-      popoverOutput.style.background = `${hex}22`;
+      updateOutput(popoverColorOutput, 'Popover picker value', hex);
+      updateOutput(popoverOutput, 'Popover current value', hex);
     }
   });
 
-  popoverPicker.setValue(popoverInput.value, true);
+  updateOutput(popoverColorOutput, 'Popover picker value', '#16a34a');
+  updateOutput(popoverOutput, 'Popover current value', '#16a34a');
 
   if ('showPopover' in popover && typeof popover.showPopover === 'function') {
     popover.showPopover();

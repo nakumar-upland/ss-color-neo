@@ -146,7 +146,7 @@ var COLOR_NEO_CSS = `
 
 .color-neo-popup {
   --color-neo-popup-width: 260px;
-  --color-neo-swatch-height: 180px;
+  --color-neo-swatch-height: 168px;
   position: fixed;
   z-index: 9999;
   box-sizing: border-box;
@@ -164,17 +164,17 @@ var COLOR_NEO_CSS = `
 
 .color-neo-popup--small {
   --color-neo-popup-width: 220px;
-  --color-neo-swatch-height: 140px;
+  --color-neo-swatch-height: 128px;
 }
 
 .color-neo-popup--medium {
   --color-neo-popup-width: 260px;
-  --color-neo-swatch-height: 180px;
+  --color-neo-swatch-height: 168px;
 }
 
 .color-neo-popup--large {
   --color-neo-popup-width: 320px;
-  --color-neo-swatch-height: 220px;
+  --color-neo-swatch-height: 208px;
 }
 
 .color-neo-popup[hidden] {
@@ -222,16 +222,27 @@ var COLOR_NEO_CSS = `
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  width: 32px;
+  height: 32px;
   border: 0;
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 0;
   background: #0f172a;
   color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
   cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.color-neo-eyedropper:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.26);
+}
+
+.color-neo-eyedropper:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .color-neo-eyedropper-icon {
@@ -335,6 +346,38 @@ var COLOR_NEO_CSS = `
   color: #0f172a;
   font-size: 14px;
 }
+
+.color-neo-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.color-neo-history[hidden] {
+  display: none;
+}
+
+.color-neo-history-swatch {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.14);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.color-neo-history-swatch:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.2), 0 4px 10px rgba(15, 23, 42, 0.18);
+}
+
+.color-neo-history-swatch:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
 `;
 function ensureStyles() {
   if (document.getElementById(COLOR_NEO_STYLE_ID)) {
@@ -353,6 +396,7 @@ var ColorNeo = class {
     this.isSyncing = false;
     this.popupAnchor = null;
     this.hexInputDebounceMs = 2e3;
+    this.historyMaxItems = 7;
     this.hexInputTimer = null;
     this.positionPopup = () => {
       if (this.popup.hidden) {
@@ -395,6 +439,7 @@ var ColorNeo = class {
     this.input = input;
     this.options = {
       closeOnSelect: options.closeOnSelect ?? false,
+      historyStorageKey: options.historyStorageKey ?? "color-neo-history",
       onChange: options.onChange,
       mode: options.mode ?? "default",
       size: options.size ?? "medium",
@@ -402,6 +447,7 @@ var ColorNeo = class {
     };
     this.mode = this.options.mode ?? "default";
     this.size = this.options.size ?? "medium";
+    this.historyStorageKey = this.options.historyStorageKey ?? "color-neo-history";
     this.input.classList.add("color-neo-input");
     this.input.spellcheck = false;
     this.input.autocomplete = "off";
@@ -430,14 +476,13 @@ var ColorNeo = class {
     this.eyeDropperButton = document.createElement("button");
     this.eyeDropperButton.type = "button";
     this.eyeDropperButton.className = "color-neo-eyedropper";
+    this.eyeDropperButton.title = "Pick color";
+    this.eyeDropperButton.setAttribute("aria-label", "Pick color");
     const eyeDropperIcon = document.createElement("span");
     eyeDropperIcon.className = "color-neo-eyedropper-icon";
     eyeDropperIcon.setAttribute("aria-hidden", "true");
     eyeDropperIcon.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M15.8 5.2a2.8 2.8 0 0 1 4 4l-2 2 1.2 1.2a1 1 0 0 1 0 1.4l-1.4 1.4a1 1 0 0 1-1.4 0L15 14l-6.7 6.7a4 4 0 0 1-2.8 1.2H3a1 1 0 0 1-1-1v-2.5a4 4 0 0 1 1.2-2.8L9.9 9 8.6 7.8a1 1 0 0 1 0-1.4L10 5a1 1 0 0 1 1.4 0l1.2 1.2 2-2zM4 19v1h1a2 2 0 0 0 1.4-.6l6.2-6.2-1.4-1.4L5.6 17.4A2 2 0 0 0 5 18.8V19H4z"/></svg>';
-    const eyeDropperLabel = document.createElement("span");
-    eyeDropperLabel.className = "color-neo-eyedropper-label";
-    eyeDropperLabel.textContent = "Pick";
-    this.eyeDropperButton.append(eyeDropperIcon, eyeDropperLabel);
+    this.eyeDropperButton.append(eyeDropperIcon);
     this.eyeDropperButton.hidden = !("EyeDropper" in window);
     topbar.append(preview, this.eyeDropperButton);
     this.swatch = document.createElement("div");
@@ -447,21 +492,21 @@ var ColorNeo = class {
     this.swatch.append(this.handle);
     const sliderWrap = document.createElement("div");
     sliderWrap.className = "color-neo-slider-wrap";
-    const sliderLabel = document.createElement("div");
-    sliderLabel.className = "color-neo-slider-label";
-    sliderLabel.textContent = "Shade slider";
     this.hueSlider = document.createElement("input");
     this.hueSlider.className = "color-neo-slider";
     this.hueSlider.type = "range";
     this.hueSlider.min = "0";
     this.hueSlider.max = "360";
     this.hueSlider.value = "0";
-    sliderWrap.append(sliderLabel, this.hueSlider);
+    this.hueSlider.setAttribute("aria-label", "Shade slider");
+    sliderWrap.append(this.hueSlider);
     this.popupInput = document.createElement("input");
     this.popupInput.className = "color-neo-popup-input";
     this.popupInput.type = "text";
     this.popupInput.setAttribute("aria-label", "Hex color value");
-    this.popup.append(topbar, this.swatch, sliderWrap, this.popupInput);
+    this.historyRow = document.createElement("div");
+    this.historyRow.className = "color-neo-history";
+    this.popup.append(topbar, this.swatch, sliderWrap, this.historyRow, this.popupInput);
     this.boundDocumentClick = (event) => {
       const targetNode = event.target;
       if (!targetNode || this.wrapper.contains(targetNode) || this.popup.contains(targetNode)) {
@@ -476,6 +521,7 @@ var ColorNeo = class {
     };
     this.mount();
     this.bindEvents();
+    this.renderHistory();
     const initial = options.value ?? input.value ?? "#000000";
     this.setValue(initial);
   }
@@ -646,6 +692,7 @@ var ColorNeo = class {
     this.previewChip.style.background = normalized;
     this.trigger.style.background = normalized;
     if (emitEvents) {
+      this.pushHistory(normalized);
       this.isSyncing = true;
       try {
         this.input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -655,6 +702,62 @@ var ColorNeo = class {
       } finally {
         this.isSyncing = false;
       }
+    }
+  }
+  renderHistory(colors = this.readHistory()) {
+    this.historyRow.replaceChildren();
+    this.historyRow.hidden = colors.length === 0;
+    for (const color of colors) {
+      const swatchButton = document.createElement("button");
+      swatchButton.type = "button";
+      swatchButton.className = "color-neo-history-swatch";
+      swatchButton.style.background = color;
+      swatchButton.title = color;
+      swatchButton.setAttribute("aria-label", `Use recent color ${color}`);
+      swatchButton.addEventListener("click", () => {
+        this.setValue(color, true);
+      });
+      this.historyRow.append(swatchButton);
+    }
+  }
+  pushHistory(hex) {
+    const normalized = normalizeHex(hex);
+    const next = [normalized, ...this.readHistory().filter((value) => value !== normalized)].slice(0, this.historyMaxItems);
+    this.writeHistory(next);
+    this.renderHistory(next);
+  }
+  readHistory() {
+    try {
+      const raw = window.localStorage.getItem(this.historyStorageKey);
+      if (!raw) {
+        return [];
+      }
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      const history = [];
+      for (const value of parsed) {
+        if (typeof value !== "string" || !isValidHex(value)) {
+          continue;
+        }
+        const normalized = normalizeHex(value);
+        if (!history.includes(normalized)) {
+          history.push(normalized);
+        }
+        if (history.length >= this.historyMaxItems) {
+          break;
+        }
+      }
+      return history;
+    } catch {
+      return [];
+    }
+  }
+  writeHistory(colors) {
+    try {
+      window.localStorage.setItem(this.historyStorageKey, JSON.stringify(colors));
+    } catch {
     }
   }
 };

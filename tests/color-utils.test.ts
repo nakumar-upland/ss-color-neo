@@ -7,6 +7,11 @@ describe('color utils', () => {
     expect(normalizeHex('#abc')).toBe('#aabbcc');
   });
 
+  it('normalizes rgb values to hex', () => {
+    expect(normalizeHex('rgb(255, 107, 107)')).toBe('#ff6b6b');
+    expect(normalizeHex('rgba(14, 165, 233, 0.6)')).toBe('#0ea5e9');
+  });
+
   it('falls back for invalid values', () => {
     expect(normalizeHex('not-a-color')).toBe('#000000');
   });
