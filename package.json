@@ -34,7 +34,7 @@
   ],
   "author": "",
   "license": "MIT",
-  "packageManager": "pnpm@10.7.0",
+  "packageManager": "pnpm@8.15.1",
   "devDependencies": {
     "@types/node": "^22.15.3",
     "esbuild": "0.18.20",
