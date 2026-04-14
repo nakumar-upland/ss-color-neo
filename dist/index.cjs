@@ -119,10 +119,38 @@ var COLOR_NEO_CSS = `
   background: var(--color-neo-current, #000000);
 }
 
+.color-neo-field--swatch-left {
+  gap: 6px;
+  padding: 3px;
+  border: 1px solid #cbd5e1;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.color-neo-field--swatch-left .color-neo-trigger {
+  width: 24px;
+  height: 24px;
+  border-radius: 2px;
+  flex: 0 0 auto;
+  box-shadow: none;
+}
+
+.color-neo-field--swatch-left .color-neo-input {
+  width: 92px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 2px;
+  font-size: 12px;
+  background: transparent;
+}
+
 .color-neo-popup {
+  --color-neo-popup-width: 260px;
+  --color-neo-swatch-height: 180px;
   position: fixed;
   z-index: 9999;
-  width: 280px;
+  box-sizing: border-box;
+  width: min(var(--color-neo-popup-width), calc(100vw - 16px));
   padding: 14px;
   border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 20px;
@@ -134,8 +162,31 @@ var COLOR_NEO_CSS = `
   backdrop-filter: blur(16px);
 }
 
+.color-neo-popup--small {
+  --color-neo-popup-width: 220px;
+  --color-neo-swatch-height: 140px;
+}
+
+.color-neo-popup--medium {
+  --color-neo-popup-width: 260px;
+  --color-neo-swatch-height: 180px;
+}
+
+.color-neo-popup--large {
+  --color-neo-popup-width: 320px;
+  --color-neo-swatch-height: 220px;
+}
+
 .color-neo-popup[hidden] {
   display: none;
+}
+
+.color-neo-popup-inline {
+  position: relative;
+  left: 0;
+  top: 0;
+  width: min(var(--color-neo-popup-width), 100%);
+  max-width: 100%;
 }
 
 .color-neo-topbar {
@@ -171,13 +222,32 @@ var COLOR_NEO_CSS = `
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   border: 0;
   border-radius: 999px;
   padding: 8px 12px;
   background: #0f172a;
   color: #fff;
   font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
+}
+
+.color-neo-eyedropper-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.color-neo-eyedropper-icon svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.color-neo-eyedropper-label {
+  display: inline-block;
 }
 
 .color-neo-eyedropper[hidden] {
@@ -187,7 +257,7 @@ var COLOR_NEO_CSS = `
 .color-neo-swatch {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: var(--color-neo-swatch-height);
   border-radius: 16px;
   cursor: crosshair;
   overflow: hidden;
@@ -281,41 +351,72 @@ var ColorNeo = class {
   constructor(target, options = {}) {
     this.hsv = hexToHsv("#000000");
     this.isSyncing = false;
+    this.popupAnchor = null;
+    this.hexInputDebounceMs = 2e3;
+    this.hexInputTimer = null;
     this.positionPopup = () => {
       if (this.popup.hidden) {
         return;
       }
-      const rect = this.wrapper.getBoundingClientRect();
-      const popupWidth = 280;
-      const popupHeight = 340;
+      if (this.isInlineMount) {
+        this.popup.style.left = "0px";
+        this.popup.style.top = "0px";
+        this.popup.style.right = "auto";
+        return;
+      }
+      const anchorElement = this.popupAnchor ?? this.wrapper;
+      const rect = anchorElement.getBoundingClientRect();
+      const popupWidth = this.popup.offsetWidth || 280;
+      const popupHeight = this.popup.offsetHeight || 340;
       const gap = 10;
       const left = clamp(rect.left, 8, window.innerWidth - popupWidth - 8);
       const top = rect.bottom + popupHeight + gap > window.innerHeight ? rect.top - popupHeight - gap : rect.bottom + gap;
       this.popup.style.left = `${left}px`;
       this.popup.style.top = `${Math.max(8, top)}px`;
     };
-    const input = typeof target === "string" ? document.querySelector(target) : target;
-    if (!input) {
-      throw new Error("ColorNeo target input was not found.");
+    const targetElement = typeof target === "string" ? document.querySelector(target) : target;
+    if (!targetElement) {
+      throw new Error("ColorNeo target element was not found.");
+    }
+    let input;
+    if (targetElement instanceof HTMLInputElement) {
+      input = targetElement;
+      this.isInlineMount = false;
+      this.mountContainer = null;
+    } else {
+      input = document.createElement("input");
+      input.type = "text";
+      input.hidden = true;
+      input.setAttribute("aria-hidden", "true");
+      this.isInlineMount = true;
+      this.mountContainer = targetElement;
     }
     ensureStyles();
     this.input = input;
     this.options = {
       closeOnSelect: options.closeOnSelect ?? false,
       onChange: options.onChange,
+      mode: options.mode ?? "default",
+      size: options.size ?? "medium",
       value: options.value
     };
+    this.mode = this.options.mode ?? "default";
+    this.size = this.options.size ?? "medium";
     this.input.classList.add("color-neo-input");
     this.input.spellcheck = false;
     this.input.autocomplete = "off";
     this.wrapper = document.createElement("div");
     this.wrapper.className = "color-neo-field";
+    if (this.mode === "hex-swatch-left") {
+      this.wrapper.classList.add("color-neo-field--swatch-left");
+    }
     this.trigger = document.createElement("button");
     this.trigger.type = "button";
     this.trigger.className = "color-neo-trigger";
     this.trigger.setAttribute("aria-label", "Open color picker");
     this.popup = document.createElement("div");
     this.popup.className = "color-neo-popup";
+    this.popup.classList.add(`color-neo-popup--${this.size}`);
     this.popup.hidden = true;
     const topbar = document.createElement("div");
     topbar.className = "color-neo-topbar";
@@ -329,7 +430,14 @@ var ColorNeo = class {
     this.eyeDropperButton = document.createElement("button");
     this.eyeDropperButton.type = "button";
     this.eyeDropperButton.className = "color-neo-eyedropper";
-    this.eyeDropperButton.textContent = "Pick";
+    const eyeDropperIcon = document.createElement("span");
+    eyeDropperIcon.className = "color-neo-eyedropper-icon";
+    eyeDropperIcon.setAttribute("aria-hidden", "true");
+    eyeDropperIcon.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M15.8 5.2a2.8 2.8 0 0 1 4 4l-2 2 1.2 1.2a1 1 0 0 1 0 1.4l-1.4 1.4a1 1 0 0 1-1.4 0L15 14l-6.7 6.7a4 4 0 0 1-2.8 1.2H3a1 1 0 0 1-1-1v-2.5a4 4 0 0 1 1.2-2.8L9.9 9 8.6 7.8a1 1 0 0 1 0-1.4L10 5a1 1 0 0 1 1.4 0l1.2 1.2 2-2zM4 19v1h1a2 2 0 0 0 1.4-.6l6.2-6.2-1.4-1.4L5.6 17.4A2 2 0 0 0 5 18.8V19H4z"/></svg>';
+    const eyeDropperLabel = document.createElement("span");
+    eyeDropperLabel.className = "color-neo-eyedropper-label";
+    eyeDropperLabel.textContent = "Pick";
+    this.eyeDropperButton.append(eyeDropperIcon, eyeDropperLabel);
     this.eyeDropperButton.hidden = !("EyeDropper" in window);
     topbar.append(preview, this.eyeDropperButton);
     this.swatch = document.createElement("div");
@@ -371,9 +479,11 @@ var ColorNeo = class {
     const initial = options.value ?? input.value ?? "#000000";
     this.setValue(initial);
   }
-  open() {
-    this.positionPopup();
+  open(anchor) {
+    this.popupAnchor = anchor ?? null;
+    this.attachPopupToHost();
     this.popup.hidden = false;
+    this.positionPopup();
   }
   close() {
     this.popup.hidden = true;
@@ -386,12 +496,21 @@ var ColorNeo = class {
     this.close();
   }
   destroy() {
+    if (this.hexInputTimer !== null) {
+      window.clearTimeout(this.hexInputTimer);
+      this.hexInputTimer = null;
+    }
     document.removeEventListener("mousedown", this.boundDocumentClick);
     document.removeEventListener("keydown", this.boundEscape);
     window.removeEventListener("resize", this.positionPopup);
     window.removeEventListener("scroll", this.positionPopup, true);
     this.popup.remove();
     this.trigger.remove();
+    if (this.isInlineMount) {
+      this.input.remove();
+      this.input.classList.remove("color-neo-input");
+      return;
+    }
     const parent = this.wrapper.parentElement;
     if (parent) {
       parent.insertBefore(this.input, this.wrapper);
@@ -405,32 +524,57 @@ var ColorNeo = class {
     this.syncUi(normalized, emitEvents);
   }
   mount() {
+    if (this.isInlineMount && this.mountContainer) {
+      this.mountContainer.append(this.input);
+      this.attachPopupToHost();
+      this.popup.classList.add("color-neo-popup-inline");
+      this.popup.hidden = false;
+      return;
+    }
     const parent = this.input.parentElement;
     if (!parent) {
       throw new Error("ColorNeo input requires a parent element.");
     }
     parent.insertBefore(this.wrapper, this.input);
-    this.wrapper.append(this.input, this.trigger);
-    document.body.append(this.popup);
+    if (this.mode === "hex-swatch-left") {
+      this.wrapper.append(this.trigger, this.input);
+    } else {
+      this.wrapper.append(this.input, this.trigger);
+    }
+    this.attachPopupToHost();
+  }
+  attachPopupToHost() {
+    if (this.isInlineMount && this.mountContainer) {
+      if (this.popup.parentElement !== this.mountContainer) {
+        this.mountContainer.append(this.popup);
+      }
+      return;
+    }
+    const hostTarget = this.popupAnchor ?? this.input;
+    const dialogHost = hostTarget.closest("dialog[open]");
+    const popoverHost = hostTarget.closest("[popover]");
+    const host = dialogHost ?? popoverHost ?? document.body;
+    if (this.popup.parentElement !== host) {
+      host.append(this.popup);
+    }
   }
   bindEvents() {
-    this.trigger.addEventListener("click", () => this.toggle());
-    this.input.addEventListener("focus", () => this.open());
+    if (!this.isInlineMount) {
+      this.trigger.addEventListener("click", () => this.toggle());
+      this.input.addEventListener("focus", () => this.open());
+      this.input.addEventListener("click", () => this.open());
+    }
     this.input.addEventListener("input", () => {
       if (this.isSyncing) {
         return;
       }
-      if (isValidHex(this.input.value)) {
-        this.setValue(this.input.value, true);
-      }
+      this.scheduleHexInputSync(this.input.value);
     });
     this.popupInput.addEventListener("input", () => {
       if (this.isSyncing) {
         return;
       }
-      if (isValidHex(this.popupInput.value)) {
-        this.setValue(this.popupInput.value, true);
-      }
+      this.scheduleHexInputSync(this.popupInput.value);
     });
     this.hueSlider.addEventListener("input", () => {
       this.hsv.h = Number(this.hueSlider.value);
@@ -469,10 +613,23 @@ var ColorNeo = class {
       } catch {
       }
     });
-    document.addEventListener("mousedown", this.boundDocumentClick);
-    document.addEventListener("keydown", this.boundEscape);
-    window.addEventListener("resize", this.positionPopup);
-    window.addEventListener("scroll", this.positionPopup, true);
+    if (!this.isInlineMount) {
+      document.addEventListener("mousedown", this.boundDocumentClick);
+      document.addEventListener("keydown", this.boundEscape);
+      window.addEventListener("resize", this.positionPopup);
+      window.addEventListener("scroll", this.positionPopup, true);
+    }
+  }
+  scheduleHexInputSync(value) {
+    if (this.hexInputTimer !== null) {
+      window.clearTimeout(this.hexInputTimer);
+    }
+    this.hexInputTimer = window.setTimeout(() => {
+      if (isValidHex(value)) {
+        this.setValue(value, true);
+      }
+      this.hexInputTimer = null;
+    }, this.hexInputDebounceMs);
   }
   syncUi(hex, emitEvents) {
     const normalized = normalizeHex(hex);
@@ -506,6 +663,13 @@ var ColorNeo = class {
 function attachColorNeo(selector, options) {
   return Array.from(document.querySelectorAll(selector)).map((input) => new ColorNeo(input, options));
 }
+function mountColorNeo(parent, options) {
+  const target = typeof parent === "string" ? document.querySelector(parent) : parent;
+  if (!target) {
+    throw new Error("mountColorNeo target parent was not found.");
+  }
+  return new ColorNeo(target, options);
+}
 
 exports.ColorNeo = ColorNeo;
 exports.attachColorNeo = attachColorNeo;
@@ -515,6 +679,7 @@ exports.hexToRgb = hexToRgb;
 exports.hsvToHex = hsvToHex;
 exports.hsvToRgb = hsvToRgb;
 exports.isValidHex = isValidHex;
+exports.mountColorNeo = mountColorNeo;
 exports.normalizeHex = normalizeHex;
 exports.rgbToHex = rgbToHex;
 exports.rgbToHsv = rgbToHsv;

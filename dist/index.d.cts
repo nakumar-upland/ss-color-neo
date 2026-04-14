@@ -1,6 +1,8 @@
 interface ColorNeoOptions {
     value?: string;
     closeOnSelect?: boolean;
+    mode?: 'default' | 'hex-swatch-left';
+    size?: 'small' | 'medium' | 'large';
     onChange?: (hex: string) => void;
 }
 type EyeDropperLike = {
@@ -32,18 +34,27 @@ declare class ColorNeo {
     readonly eyeDropperButton: HTMLButtonElement;
     private hsv;
     private isSyncing;
+    private popupAnchor;
+    private readonly isInlineMount;
+    private readonly mountContainer;
+    private readonly mode;
+    private readonly size;
     private readonly options;
     private readonly boundDocumentClick;
     private readonly boundEscape;
-    constructor(target: string | HTMLInputElement, options?: ColorNeoOptions);
-    open(): void;
+    private readonly hexInputDebounceMs;
+    private hexInputTimer;
+    constructor(target: string | HTMLInputElement | HTMLElement, options?: ColorNeoOptions);
+    open(anchor?: HTMLElement): void;
     close(): void;
     toggle(): void;
     destroy(): void;
     setValue(nextValue: string, emitEvents?: boolean): void;
     private mount;
+    private attachPopupToHost;
     private bindEvents;
     private positionPopup;
+    private scheduleHexInputSync;
     private syncUi;
 }
 
@@ -68,5 +79,6 @@ declare function hexToHsv(hex: string): HSV;
 declare function hsvToHex(hsv: HSV): string;
 
 declare function attachColorNeo(selector: string, options?: ColorNeoOptions): ColorNeo[];
+declare function mountColorNeo(parent: string | HTMLElement, options?: ColorNeoOptions): ColorNeo;
 
-export { ColorNeo, ColorNeoOptions, attachColorNeo, clamp, hexToHsv, hexToRgb, hsvToHex, hsvToRgb, isValidHex, normalizeHex, rgbToHex, rgbToHsv };
+export { ColorNeo, ColorNeoOptions, attachColorNeo, clamp, hexToHsv, hexToRgb, hsvToHex, hsvToRgb, isValidHex, mountColorNeo, normalizeHex, rgbToHex, rgbToHsv };
