@@ -3,10 +3,16 @@ import { ColorNeo, attachColorNeo, mountColorNeo } from '../src';
 const inlineInput = document.querySelector<HTMLInputElement>('#inline-color');
 const modalInput = document.querySelector<HTMLInputElement>('#modal-color');
 const modeInput = document.querySelector<HTMLInputElement>('#mode-color');
+const smallInput = document.querySelector<HTMLInputElement>('#small-color');
+const mediumInput = document.querySelector<HTMLInputElement>('#medium-color');
+const largeInput = document.querySelector<HTMLInputElement>('#large-color');
 const attachedInput = document.querySelector<HTMLInputElement>('#attached-color');
 const inlineOutput = document.querySelector<HTMLDivElement>('#inline-output');
 const modalOutput = document.querySelector<HTMLDivElement>('#modal-output');
 const modeOutput = document.querySelector<HTMLDivElement>('#mode-output');
+const smallOutput = document.querySelector<HTMLDivElement>('#small-output');
+const mediumOutput = document.querySelector<HTMLDivElement>('#medium-output');
+const largeOutput = document.querySelector<HTMLDivElement>('#large-output');
 const attachedOutput = document.querySelector<HTMLDivElement>('#attached-output');
 const popoverOutput = document.querySelector<HTMLDivElement>('#popover-output');
 const mountOutput = document.querySelector<HTMLDivElement>('#mount-output');
@@ -23,10 +29,16 @@ if (
   !inlineInput ||
   !modalInput ||
   !modeInput ||
+  !smallInput ||
+  !mediumInput ||
+  !largeInput ||
   !attachedInput ||
   !inlineOutput ||
   !modalOutput ||
   !modeOutput ||
+  !smallOutput ||
+  !mediumOutput ||
+  !largeOutput ||
   !attachedOutput ||
   !popoverOutput ||
   !mountOutput ||
@@ -68,6 +80,30 @@ const modePicker = new ColorNeo(modeInput, {
   }
 });
 
+const smallPicker = new ColorNeo(smallInput, {
+  size: 'small',
+  onChange: (hex) => {
+    smallOutput.textContent = `Small selector value: ${hex}`;
+    smallOutput.style.background = `${hex}22`;
+  }
+});
+
+const mediumPicker = new ColorNeo(mediumInput, {
+  size: 'medium',
+  onChange: (hex) => {
+    mediumOutput.textContent = `Medium selector value: ${hex}`;
+    mediumOutput.style.background = `${hex}22`;
+  }
+});
+
+const largePicker = new ColorNeo(largeInput, {
+  size: 'large',
+  onChange: (hex) => {
+    largeOutput.textContent = `Large selector value: ${hex}`;
+    largeOutput.style.background = `${hex}22`;
+  }
+});
+
 const [attachedPicker] = attachColorNeo('[data-color-picker]', {
   onChange: (hex) => {
     attachedOutput.textContent = `attachColorNeo value: ${hex}`;
@@ -76,6 +112,7 @@ const [attachedPicker] = attachColorNeo('[data-color-picker]', {
 });
 
 const mountedPicker = mountColorNeo(mountRoot, {
+  size: 'large',
   value: '#f59e0b',
   onChange: (hex) => {
     mountOutput.textContent = `Mounted selector value: ${hex}`;
@@ -86,6 +123,9 @@ const mountedPicker = mountColorNeo(mountRoot, {
 inlinePicker.setValue(inlineInput.value, true);
 modalPicker.setValue(modalInput.value, true);
 modePicker.setValue(modeInput.value, true);
+smallPicker.setValue(smallInput.value, true);
+mediumPicker.setValue(mediumInput.value, true);
+largePicker.setValue(largeInput.value, true);
 attachedPicker?.setValue(attachedInput.value, true);
 mountedPicker.setValue('#f59e0b', true);
 

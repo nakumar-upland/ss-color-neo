@@ -65,6 +65,25 @@ const picker = mountColorNeo('#picker-slot', {
 picker.setValue('#16a34a', true);
 ```
 
+### Selector size options
+
+`size` controls the picker panel dimensions and supports `small`, `medium`, and `large`.
+
+- `medium` is the default when `size` is omitted.
+- In parent mount mode (`mountColorNeo`), selector width is capped to the parent container width.
+
+```ts
+import { ColorNeo } from 'ss-color-neo';
+
+const input = document.querySelector('#brand-color');
+
+if (input instanceof HTMLInputElement) {
+  new ColorNeo(input, { size: 'small' });
+  new ColorNeo(input, { size: 'medium' });
+  new ColorNeo(input, { size: 'large' });
+}
+```
+
 ### Open below a custom anchor element
 
 ```ts
@@ -96,6 +115,7 @@ type ColorNeoOptions = {
   value?: string;
   closeOnSelect?: boolean;
   mode?: 'default' | 'hex-swatch-left';
+  size?: 'small' | 'medium' | 'large';
   onChange?: (hex: string) => void;
 };
 ```
@@ -116,6 +136,7 @@ Current demo coverage:
 - popup usage inside an HTML dialog
 - picker rendered inside a popover
 - built-in `hex-swatch-left` mode
+- selector size demos: `small`, `medium`, and `large`
 - direct parent-element mounting with `mountColorNeo`
 
 ## Automated checks

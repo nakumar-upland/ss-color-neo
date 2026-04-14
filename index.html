@@ -205,6 +205,7 @@
         border: 1px dashed #cbd5e1;
         border-radius: 14px;
         background: rgba(255, 255, 255, 0.76);
+        width: min(100%, 240px);
       }
     </style>
   </head>
@@ -245,6 +246,21 @@
           <label for="mode-color">Built-in mode: left swatch + hex</label>
           <input id="mode-color" value="#0ea5e9" />
           <div id="mode-output" class="color-output"></div>
+        </div>
+        <div class="card">
+          <label for="small-color">Selector size: small</label>
+          <input id="small-color" value="#f97316" />
+          <div id="small-output" class="color-output"></div>
+        </div>
+        <div class="card">
+          <label for="medium-color">Selector size: medium (default)</label>
+          <input id="medium-color" value="#6366f1" />
+          <div id="medium-output" class="color-output"></div>
+        </div>
+        <div class="card">
+          <label for="large-color">Selector size: large</label>
+          <input id="large-color" value="#14b8a6" />
+          <div id="large-output" class="color-output"></div>
         </div>
         <div class="card">
           <label>Direct parent mount (no input)</label>

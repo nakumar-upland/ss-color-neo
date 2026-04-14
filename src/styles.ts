@@ -56,9 +56,12 @@ export const COLOR_NEO_CSS = `
 }
 
 .color-neo-popup {
+  --color-neo-popup-width: 260px;
+  --color-neo-swatch-height: 180px;
   position: fixed;
   z-index: 9999;
-  width: 280px;
+  box-sizing: border-box;
+  width: min(var(--color-neo-popup-width), calc(100vw - 16px));
   padding: 14px;
   border: 1px solid rgba(148, 163, 184, 0.28);
   border-radius: 20px;
@@ -70,6 +73,21 @@ export const COLOR_NEO_CSS = `
   backdrop-filter: blur(16px);
 }
 
+.color-neo-popup--small {
+  --color-neo-popup-width: 220px;
+  --color-neo-swatch-height: 140px;
+}
+
+.color-neo-popup--medium {
+  --color-neo-popup-width: 260px;
+  --color-neo-swatch-height: 180px;
+}
+
+.color-neo-popup--large {
+  --color-neo-popup-width: 320px;
+  --color-neo-swatch-height: 220px;
+}
+
 .color-neo-popup[hidden] {
   display: none;
 }
@@ -78,7 +96,8 @@ export const COLOR_NEO_CSS = `
   position: relative;
   left: 0;
   top: 0;
-  max-width: 320px;
+  width: min(var(--color-neo-popup-width), 100%);
+  max-width: 100%;
 }
 
 .color-neo-topbar {
@@ -114,13 +133,32 @@ export const COLOR_NEO_CSS = `
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   border: 0;
   border-radius: 999px;
   padding: 8px 12px;
   background: #0f172a;
   color: #fff;
   font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
   cursor: pointer;
+}
+
+.color-neo-eyedropper-icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+.color-neo-eyedropper-icon svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.color-neo-eyedropper-label {
+  display: inline-block;
 }
 
 .color-neo-eyedropper[hidden] {
@@ -130,7 +168,7 @@ export const COLOR_NEO_CSS = `
 .color-neo-swatch {
   position: relative;
   width: 100%;
-  height: 180px;
+  height: var(--color-neo-swatch-height);
   border-radius: 16px;
   cursor: crosshair;
   overflow: hidden;

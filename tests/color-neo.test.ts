@@ -21,6 +21,41 @@ describe('ColorNeo', () => {
     expect(picker.popup.hidden).toBe(false);
   });
 
+  it('uses medium popup size by default', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input);
+
+    expect(picker.popup.classList.contains('color-neo-popup--medium')).toBe(true);
+  });
+
+  it('supports small and large popup sizes', () => {
+    document.body.innerHTML = `
+      <div id="app">
+        <input id="small" value="#123456" />
+        <input id="large" value="#abcdef" />
+      </div>
+    `;
+
+    const smallInput = document.querySelector<HTMLInputElement>('#small');
+    const largeInput = document.querySelector<HTMLInputElement>('#large');
+
+    if (!smallInput || !largeInput) {
+      throw new Error('size inputs missing');
+    }
+
+    const smallPicker = new ColorNeo(smallInput, { size: 'small' });
+    const largePicker = new ColorNeo(largeInput, { size: 'large' });
+
+    expect(smallPicker.popup.classList.contains('color-neo-popup--small')).toBe(true);
+    expect(largePicker.popup.classList.contains('color-neo-popup--large')).toBe(true);
+  });
+
   it('renders directly inside a provided parent element', () => {
     document.body.innerHTML = '<div id="mount"></div>';
     const mount = document.querySelector<HTMLDivElement>('#mount');
@@ -114,6 +149,38 @@ describe('ColorNeo', () => {
 
     expect(input.value).toBe('#00ff00');
     expect(onChange).toHaveBeenCalledWith('#00ff00');
+  });
+
+  it('debounces hex typing updates by 2 seconds', () => {
+    vi.useFakeTimers();
+
+    try {
+      document.body.innerHTML = '<div id="app"><input id="color" value="#111111" /></div>';
+      const input = document.querySelector<HTMLInputElement>('#color');
+
+      if (!input) {
+        throw new Error('input missing');
+      }
+
+      const onChange = vi.fn();
+      const picker = new ColorNeo(input, { onChange });
+
+      input.value = '000';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+
+      expect(onChange).toHaveBeenCalledTimes(0);
+
+      vi.advanceTimersByTime(1999);
+      expect(onChange).toHaveBeenCalledTimes(0);
+
+      vi.advanceTimersByTime(1);
+      expect(onChange).toHaveBeenCalledWith('#000000');
+      expect(input.value).toBe('#000000');
+
+      picker.destroy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('opens the eyedropper when supported', async () => {

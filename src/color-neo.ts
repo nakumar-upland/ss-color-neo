@@ -5,6 +5,7 @@ export interface ColorNeoOptions {
   value?: string;
   closeOnSelect?: boolean;
   mode?: 'default' | 'hex-swatch-left';
+  size?: 'small' | 'medium' | 'large';
   onChange?: (hex: string) => void;
 }
 
@@ -40,9 +41,12 @@ export class ColorNeo {
   private readonly isInlineMount: boolean;
   private readonly mountContainer: HTMLElement | null;
   private readonly mode: NonNullable<ColorNeoOptions['mode']>;
+  private readonly size: NonNullable<ColorNeoOptions['size']>;
   private readonly options: Required<Pick<ColorNeoOptions, 'closeOnSelect'>> & Omit<ColorNeoOptions, 'closeOnSelect'>;
   private readonly boundDocumentClick: (event: MouseEvent) => void;
   private readonly boundEscape: (event: KeyboardEvent) => void;
+  private readonly hexInputDebounceMs = 2000;
+  private hexInputTimer: number | null = null;
 
   constructor(target: string | HTMLInputElement | HTMLElement, options: ColorNeoOptions = {}) {
     const targetElement = typeof target === 'string' ? document.querySelector<HTMLElement>(target) : target;
@@ -74,9 +78,11 @@ export class ColorNeo {
       closeOnSelect: options.closeOnSelect ?? false,
       onChange: options.onChange,
       mode: options.mode ?? 'default',
+      size: options.size ?? 'medium',
       value: options.value
     };
     this.mode = this.options.mode ?? 'default';
+    this.size = this.options.size ?? 'medium';
 
     this.input.classList.add('color-neo-input');
     this.input.spellcheck = false;
@@ -96,6 +102,7 @@ export class ColorNeo {
 
     this.popup = document.createElement('div');
     this.popup.className = 'color-neo-popup';
+    this.popup.classList.add(`color-neo-popup--${this.size}`);
     this.popup.hidden = true;
 
     const topbar = document.createElement('div');
@@ -115,7 +122,16 @@ export class ColorNeo {
     this.eyeDropperButton = document.createElement('button');
     this.eyeDropperButton.type = 'button';
     this.eyeDropperButton.className = 'color-neo-eyedropper';
-    this.eyeDropperButton.textContent = 'Pick';
+    const eyeDropperIcon = document.createElement('span');
+    eyeDropperIcon.className = 'color-neo-eyedropper-icon';
+    eyeDropperIcon.setAttribute('aria-hidden', 'true');
+    eyeDropperIcon.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M15.8 5.2a2.8 2.8 0 0 1 4 4l-2 2 1.2 1.2a1 1 0 0 1 0 1.4l-1.4 1.4a1 1 0 0 1-1.4 0L15 14l-6.7 6.7a4 4 0 0 1-2.8 1.2H3a1 1 0 0 1-1-1v-2.5a4 4 0 0 1 1.2-2.8L9.9 9 8.6 7.8a1 1 0 0 1 0-1.4L10 5a1 1 0 0 1 1.4 0l1.2 1.2 2-2zM4 19v1h1a2 2 0 0 0 1.4-.6l6.2-6.2-1.4-1.4L5.6 17.4A2 2 0 0 0 5 18.8V19H4z"/></svg>';
+
+    const eyeDropperLabel = document.createElement('span');
+    eyeDropperLabel.className = 'color-neo-eyedropper-label';
+    eyeDropperLabel.textContent = 'Pick';
+
+    this.eyeDropperButton.append(eyeDropperIcon, eyeDropperLabel);
     this.eyeDropperButton.hidden = !('EyeDropper' in window);
 
     topbar.append(preview, this.eyeDropperButton);
@@ -174,8 +190,8 @@ export class ColorNeo {
   open(anchor?: HTMLElement): void {
     this.popupAnchor = anchor ?? null;
     this.attachPopupToHost();
-    this.positionPopup();
     this.popup.hidden = false;
+    this.positionPopup();
   }
 
   close(): void {
@@ -192,6 +208,11 @@ export class ColorNeo {
   }
 
   destroy(): void {
+    if (this.hexInputTimer !== null) {
+      window.clearTimeout(this.hexInputTimer);
+      this.hexInputTimer = null;
+    }
+
     document.removeEventListener('mousedown', this.boundDocumentClick);
     document.removeEventListener('keydown', this.boundEscape);
     window.removeEventListener('resize', this.positionPopup);
@@ -275,9 +296,7 @@ export class ColorNeo {
         return;
       }
 
-      if (isValidHex(this.input.value)) {
-        this.setValue(this.input.value, true);
-      }
+      this.scheduleHexInputSync(this.input.value);
     });
 
     this.popupInput.addEventListener('input', () => {
@@ -285,9 +304,7 @@ export class ColorNeo {
         return;
       }
 
-      if (isValidHex(this.popupInput.value)) {
-        this.setValue(this.popupInput.value, true);
-      }
+      this.scheduleHexInputSync(this.popupInput.value);
     });
 
     this.hueSlider.addEventListener('input', () => {
@@ -350,13 +367,14 @@ export class ColorNeo {
     if (this.isInlineMount) {
       this.popup.style.left = '0px';
       this.popup.style.top = '0px';
+      this.popup.style.right = 'auto';
       return;
     }
 
     const anchorElement = this.popupAnchor ?? this.wrapper;
     const rect = anchorElement.getBoundingClientRect();
-    const popupWidth = 280;
-    const popupHeight = 340;
+    const popupWidth = this.popup.offsetWidth || 280;
+    const popupHeight = this.popup.offsetHeight || 340;
     const gap = 10;
     const left = clamp(rect.left, 8, window.innerWidth - popupWidth - 8);
     const top = rect.bottom + popupHeight + gap > window.innerHeight ? rect.top - popupHeight - gap : rect.bottom + gap;
@@ -364,6 +382,19 @@ export class ColorNeo {
     this.popup.style.left = `${left}px`;
     this.popup.style.top = `${Math.max(8, top)}px`;
   };
+
+  private scheduleHexInputSync(value: string): void {
+    if (this.hexInputTimer !== null) {
+      window.clearTimeout(this.hexInputTimer);
+    }
+
+    this.hexInputTimer = window.setTimeout(() => {
+      if (isValidHex(value)) {
+        this.setValue(value, true);
+      }
+      this.hexInputTimer = null;
+    }, this.hexInputDebounceMs);
+  }
 
   private syncUi(hex: string, emitEvents: boolean): void {
     const normalized = normalizeHex(hex);
