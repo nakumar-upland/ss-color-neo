@@ -170,6 +170,23 @@ describe('ColorNeo', () => {
     expect(picker.previewLabel.textContent).toBe('#ff6b6b');
   });
 
+  it('keeps the picker empty when initialized without a color', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input);
+
+    expect(input.value).toBe('');
+    expect(picker.popupInput.value).toBe('');
+    expect(picker.previewLabel.textContent).toBe('');
+    expect(picker.trigger.classList.contains('color-neo-trigger--empty')).toBe(true);
+    expect(picker.handle.hidden).toBe(true);
+  });
+
   it('emits updates when the value changes', () => {
     document.body.innerHTML = '<div id="app"><input id="color" value="#000000" /></div>';
     const input = document.querySelector<HTMLInputElement>('#color');
@@ -184,6 +201,26 @@ describe('ColorNeo', () => {
 
     expect(input.value).toBe('#00ff00');
     expect(onChange).toHaveBeenCalledWith('#00ff00');
+  });
+
+  it('clears the picker instead of falling back to black', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const onChange = vi.fn();
+    const picker = new ColorNeo(input, { onChange });
+
+    picker.setValue('', true);
+
+    expect(input.value).toBe('');
+    expect(picker.popupInput.value).toBe('');
+    expect(picker.previewLabel.textContent).toBe('');
+    expect(picker.trigger.classList.contains('color-neo-trigger--empty')).toBe(true);
+    expect(onChange).toHaveBeenCalledWith('');
   });
 
   it('debounces hex typing updates by 2 seconds', () => {

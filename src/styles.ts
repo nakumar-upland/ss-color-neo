@@ -30,6 +30,10 @@ export const COLOR_NEO_CSS = `
   background: var(--color-neo-current, #000000);
 }
 
+.color-neo-trigger--empty {
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.6), 0 8px 20px rgba(15,23,42,0.1);
+}
+
 .color-neo-field--swatch-left {
   gap: 6px;
   padding: 3px;
@@ -120,6 +124,10 @@ export const COLOR_NEO_CSS = `
   border-radius: 10px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: var(--color-neo-current, #000000);
+}
+
+.color-neo-chip--empty {
+  border-color: rgba(148, 163, 184, 0.6);
 }
 
 .color-neo-value {

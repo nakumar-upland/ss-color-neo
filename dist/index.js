@@ -125,6 +125,10 @@ var COLOR_NEO_CSS = `
   background: var(--color-neo-current, #000000);
 }
 
+.color-neo-trigger--empty {
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.6), 0 8px 20px rgba(15,23,42,0.1);
+}
+
 .color-neo-field--swatch-left {
   gap: 6px;
   padding: 3px;
@@ -215,6 +219,10 @@ var COLOR_NEO_CSS = `
   border-radius: 10px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: var(--color-neo-current, #000000);
+}
+
+.color-neo-chip--empty {
+  border-color: rgba(148, 163, 184, 0.6);
 }
 
 .color-neo-value {
@@ -398,6 +406,7 @@ function ensureStyles() {
 // src/color-neo.ts
 var ColorNeo = class {
   constructor(target, options = {}) {
+    this.emptyColorPattern = "repeating-linear-gradient(135deg, #e2e8f0 0 6px, #ffffff 6px 12px)";
     this.hsv = hexToHsv("#000000");
     this.isSyncing = false;
     this.popupAnchor = null;
@@ -570,6 +579,10 @@ var ColorNeo = class {
     this.input.classList.remove("color-neo-input");
   }
   setValue(nextValue, emitEvents = false) {
+    if (nextValue.trim() === "") {
+      this.clearValue(emitEvents);
+      return;
+    }
     const normalized = normalizeHex(nextValue);
     this.hsv = hexToHsv(normalized);
     this.syncUi(normalized, emitEvents);
@@ -679,6 +692,11 @@ var ColorNeo = class {
       window.clearTimeout(this.hexInputTimer);
     }
     this.hexInputTimer = window.setTimeout(() => {
+      if (value.trim() === "") {
+        this.clearValue(true);
+        this.hexInputTimer = null;
+        return;
+      }
       if (isValidHex(value)) {
         this.setValue(value, true);
       }
@@ -695,8 +713,9 @@ var ColorNeo = class {
     this.input.value = normalized;
     this.popupInput.value = normalized;
     this.previewLabel.textContent = normalized;
-    this.previewChip.style.setProperty("--color-neo-current", normalized);
-    this.trigger.style.setProperty("--color-neo-current", normalized);
+    this.previewChip.classList.remove("color-neo-chip--empty");
+    this.trigger.classList.remove("color-neo-trigger--empty");
+    this.handle.hidden = false;
     this.previewChip.style.background = normalized;
     this.trigger.style.background = normalized;
     if (emitEvents) {
@@ -707,6 +726,27 @@ var ColorNeo = class {
         this.input.dispatchEvent(new Event("change", { bubbles: true }));
         this.input.dispatchEvent(new CustomEvent("colorneo:change", { detail: { value: normalized }, bubbles: true }));
         this.options.onChange?.(normalized);
+      } finally {
+        this.isSyncing = false;
+      }
+    }
+  }
+  clearValue(emitEvents) {
+    this.input.value = "";
+    this.popupInput.value = "";
+    this.previewLabel.textContent = "";
+    this.previewChip.classList.add("color-neo-chip--empty");
+    this.trigger.classList.add("color-neo-trigger--empty");
+    this.handle.hidden = true;
+    this.previewChip.style.background = this.emptyColorPattern;
+    this.trigger.style.background = this.emptyColorPattern;
+    if (emitEvents) {
+      this.isSyncing = true;
+      try {
+        this.input.dispatchEvent(new Event("input", { bubbles: true }));
+        this.input.dispatchEvent(new Event("change", { bubbles: true }));
+        this.input.dispatchEvent(new CustomEvent("colorneo:change", { detail: { value: "" }, bubbles: true }));
+        this.options.onChange?.("");
       } finally {
         this.isSyncing = false;
       }

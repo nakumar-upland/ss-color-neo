@@ -34,6 +34,7 @@ declare class ColorNeo {
     readonly previewLabel: HTMLSpanElement;
     readonly eyeDropperButton: HTMLButtonElement;
     readonly historyRow: HTMLDivElement;
+    private readonly emptyColorPattern;
     private hsv;
     private isSyncing;
     private popupAnchor;
@@ -61,6 +62,7 @@ declare class ColorNeo {
     private positionPopup;
     private scheduleHexInputSync;
     private syncUi;
+    private clearValue;
     private renderHistory;
     private pushHistory;
     private readHistory;

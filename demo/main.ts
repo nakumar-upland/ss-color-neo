@@ -4,6 +4,7 @@ const inlineInput = document.querySelector<HTMLInputElement>('#inline-color');
 const modalInput = document.querySelector<HTMLInputElement>('#modal-color');
 const modeInput = document.querySelector<HTMLInputElement>('#mode-color');
 const rgbInput = document.querySelector<HTMLInputElement>('#rgb-color');
+const emptyInput = document.querySelector<HTMLInputElement>('#empty-color');
 const smallInput = document.querySelector<HTMLInputElement>('#small-color');
 const mediumInput = document.querySelector<HTMLInputElement>('#medium-color');
 const largeInput = document.querySelector<HTMLInputElement>('#large-color');
@@ -12,6 +13,7 @@ const inlineOutput = document.querySelector<HTMLDivElement>('#inline-output');
 const modalOutput = document.querySelector<HTMLDivElement>('#modal-output');
 const modeOutput = document.querySelector<HTMLDivElement>('#mode-output');
 const rgbOutput = document.querySelector<HTMLDivElement>('#rgb-output');
+const emptyOutput = document.querySelector<HTMLDivElement>('#empty-output');
 const smallOutput = document.querySelector<HTMLDivElement>('#small-output');
 const mediumOutput = document.querySelector<HTMLDivElement>('#medium-output');
 const largeOutput = document.querySelector<HTMLDivElement>('#large-output');
@@ -34,6 +36,7 @@ if (
   !modalInput ||
   !modeInput ||
   !rgbInput ||
+  !emptyInput ||
   !smallInput ||
   !mediumInput ||
   !largeInput ||
@@ -42,6 +45,7 @@ if (
   !modalOutput ||
   !modeOutput ||
   !rgbOutput ||
+  !emptyOutput ||
   !smallOutput ||
   !mediumOutput ||
   !largeOutput ||
@@ -68,6 +72,12 @@ const mountOutputElement = mountOutput;
 const mountRootElement = mountRoot;
 
 function updateOutput(element: HTMLDivElement, label: string, hex: string): void {
+  if (hex === '') {
+    element.textContent = `${label}: empty`;
+    element.style.background = 'repeating-linear-gradient(135deg, #e2e8f0 0 6px, #ffffff 6px 12px)';
+    return;
+  }
+
   element.textContent = `${label}: ${hex}`;
   element.style.background = `${hex}22`;
 }
@@ -116,6 +126,12 @@ const rgbPicker = new ColorNeo(rgbInput, {
   }
 });
 
+const emptyPicker = new ColorNeo(emptyInput, {
+  onChange: (hex) => {
+    updateOutput(emptyOutput, 'Empty init value', hex);
+  }
+});
+
 const smallPicker = new ColorNeo(smallInput, {
   color: '#f97316',
   size: 'small',
@@ -151,6 +167,7 @@ updateOutput(inlineOutput, 'Inline picker value', '#ff6b6b');
 updateOutput(modalOutput, 'Popup picker value', '#1d4ed8');
 updateOutput(modeOutput, 'Mode picker value', '#0ea5e9');
 updateOutput(rgbOutput, 'RGB init value', '#ff6b6b');
+updateOutput(emptyOutput, 'Empty init value', '');
 updateOutput(smallOutput, 'Small selector value', '#f97316');
 updateOutput(mediumOutput, 'Medium selector value', '#6366f1');
 updateOutput(largeOutput, 'Large selector value', '#14b8a6');
