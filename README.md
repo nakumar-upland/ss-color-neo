@@ -20,7 +20,7 @@ SS Color Neo is a reusable JavaScript color picker inspired by tools like Colori
 
 ### Grouped sections (Favorites and Recent)
 
-![SS Color Neo grouped favorites and recent history](docs/images/history-groups.png)
+![SS Color Neo grouped favorites and recent history](docs/images/recents_and_groups.jpg)
 
 ## Install
 
