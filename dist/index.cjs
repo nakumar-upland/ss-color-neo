@@ -363,11 +363,30 @@ var COLOR_NEO_CSS = `
   font-size: 14px;
 }
 
+.color-neo-group {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.color-neo-group[hidden] {
+  display: none;
+}
+
+.color-neo-group-label {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
 .color-neo-history {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .color-neo-history[hidden] {
@@ -394,6 +413,92 @@ var COLOR_NEO_CSS = `
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
 }
+
+.color-neo-heart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: color 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
+}
+
+.color-neo-heart:hover:not(:disabled) {
+  background: rgba(200, 214, 229, 0.2);
+  color: #94a3b8;
+  transform: scale(1.1);
+}
+
+.color-neo-heart:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 1px;
+}
+
+.color-neo-heart--active {
+  color: #ec4899;
+}
+
+.color-neo-heart--active:hover {
+  background: rgba(236, 72, 153, 0.1);
+  color: #f472b6;
+}
+
+.color-neo-heart:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.color-neo-heart-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.color-neo-heart-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0;
+}
+
+.color-neo-favorites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.color-neo-favorites[hidden] {
+  display: none;
+}
+
+.color-neo-favorite-swatch {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1.5px rgba(236, 72, 153, 0.3);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.color-neo-favorite-swatch:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1.5px rgba(236, 72, 153, 0.5), 0 4px 10px rgba(236, 72, 153, 0.2);
+}
+
+.color-neo-favorite-swatch:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
 `;
 function ensureStyles() {
   if (document.getElementById(COLOR_NEO_STYLE_ID)) {
@@ -415,6 +520,7 @@ var ColorNeo = class {
     this.hexInputDebounceMs = 2e3;
     this.historyMaxItems = 7;
     this.hexInputTimer = null;
+    this.favorites = /* @__PURE__ */ new Set();
     this.positionPopup = () => {
       if (this.popup.hidden) {
         return;
@@ -456,13 +562,17 @@ var ColorNeo = class {
     this.input = input;
     this.options = {
       closeOnSelect: options.closeOnSelect ?? false,
+      historyEnabled: options.historyEnabled ?? false,
       historyStorageKey: options.historyStorageKey ?? "color-neo-history",
       onChange: options.onChange,
+      onFavoritesChange: options.onFavoritesChange,
+      favorites: options.favorites,
       mode: options.mode ?? "default",
       size: options.size ?? "medium"
     };
     this.mode = this.options.mode ?? "default";
     this.size = this.options.size ?? "medium";
+    this.historyEnabled = this.options.historyEnabled ?? false;
     this.historyStorageKey = this.options.historyStorageKey ?? "color-neo-history";
     this.input.classList.add("color-neo-input");
     this.input.spellcheck = false;
@@ -488,7 +598,23 @@ var ColorNeo = class {
     this.previewChip.className = "color-neo-chip";
     this.previewLabel = document.createElement("span");
     this.previewLabel.className = "color-neo-value";
-    preview.append(this.previewChip, this.previewLabel);
+    this.heartButton = document.createElement("button");
+    this.heartButton.type = "button";
+    this.heartButton.className = "color-neo-heart";
+    this.heartButton.title = "Add to favorites";
+    this.heartButton.setAttribute("aria-label", "Add to favorites");
+    const heartIcon = document.createElement("span");
+    heartIcon.className = "color-neo-heart-icon";
+    heartIcon.setAttribute("aria-hidden", "true");
+    heartIcon.innerHTML = '<svg viewBox="0 0 24 24" focusable="false"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+    this.heartButton.append(heartIcon);
+    this.heartButton.addEventListener("click", () => {
+      const currentColor = this.input.value;
+      if (currentColor) {
+        this.toggleFavorite(currentColor);
+      }
+    });
+    preview.append(this.previewChip, this.previewLabel, this.heartButton);
     this.eyeDropperButton = document.createElement("button");
     this.eyeDropperButton.type = "button";
     this.eyeDropperButton.className = "color-neo-eyedropper";
@@ -522,7 +648,21 @@ var ColorNeo = class {
     this.popupInput.setAttribute("aria-label", "Hex color value");
     this.historyRow = document.createElement("div");
     this.historyRow.className = "color-neo-history";
-    this.popup.append(topbar, this.swatch, sliderWrap, this.historyRow, this.popupInput);
+    this.favoritesRow = document.createElement("div");
+    this.favoritesRow.className = "color-neo-favorites";
+    this.favoritesSection = document.createElement("section");
+    this.favoritesSection.className = "color-neo-group color-neo-group--favorites";
+    const favoritesLabel = document.createElement("div");
+    favoritesLabel.className = "color-neo-group-label";
+    favoritesLabel.textContent = "Favorites";
+    this.favoritesSection.append(favoritesLabel, this.favoritesRow);
+    this.historySection = document.createElement("section");
+    this.historySection.className = "color-neo-group color-neo-group--history";
+    const historyLabel = document.createElement("div");
+    historyLabel.className = "color-neo-group-label";
+    historyLabel.textContent = "Recent";
+    this.historySection.append(historyLabel, this.historyRow);
+    this.popup.append(topbar, this.swatch, sliderWrap, this.favoritesSection, this.historySection, this.popupInput);
     this.boundDocumentClick = (event) => {
       const targetNode = event.target;
       if (!targetNode || this.wrapper.contains(targetNode) || this.popup.contains(targetNode)) {
@@ -537,7 +677,9 @@ var ColorNeo = class {
     };
     this.mount();
     this.bindEvents();
+    this.initializeFavorites(options.favorites);
     this.renderHistory();
+    this.renderFavorites();
     const initial = options.color ?? input.value ?? "#000000";
     this.setValue(initial);
   }
@@ -720,8 +862,11 @@ var ColorNeo = class {
     this.handle.hidden = false;
     this.previewChip.style.background = normalized;
     this.trigger.style.background = normalized;
+    this.updateHeartIcon(normalized);
     if (emitEvents) {
-      this.pushHistory(normalized);
+      if (this.historyEnabled) {
+        this.pushHistory(normalized);
+      }
       this.isSyncing = true;
       try {
         this.input.dispatchEvent(new Event("input", { bubbles: true }));
@@ -742,6 +887,8 @@ var ColorNeo = class {
     this.handle.hidden = true;
     this.previewChip.style.background = this.emptyColorPattern;
     this.trigger.style.background = this.emptyColorPattern;
+    this.heartButton.classList.remove("color-neo-heart--active");
+    this.heartButton.disabled = true;
     if (emitEvents) {
       this.isSyncing = true;
       try {
@@ -756,6 +903,7 @@ var ColorNeo = class {
   }
   renderHistory(colors = this.readHistory()) {
     this.historyRow.replaceChildren();
+    this.historySection.hidden = !this.historyEnabled || colors.length === 0;
     this.historyRow.hidden = colors.length === 0;
     for (const color of colors) {
       const swatchButton = document.createElement("button");
@@ -771,12 +919,18 @@ var ColorNeo = class {
     }
   }
   pushHistory(hex) {
+    if (!this.historyEnabled) {
+      return;
+    }
     const normalized = normalizeHex(hex);
     const next = [normalized, ...this.readHistory().filter((value) => value !== normalized)].slice(0, this.historyMaxItems);
     this.writeHistory(next);
     this.renderHistory(next);
   }
   readHistory() {
+    if (!this.historyEnabled) {
+      return [];
+    }
     try {
       const raw = window.localStorage.getItem(this.historyStorageKey);
       if (!raw) {
@@ -805,10 +959,81 @@ var ColorNeo = class {
     }
   }
   writeHistory(colors) {
+    if (!this.historyEnabled) {
+      return;
+    }
     try {
       window.localStorage.setItem(this.historyStorageKey, JSON.stringify(colors));
     } catch {
     }
+  }
+  initializeFavorites(favoritesInput) {
+    if (!favoritesInput) {
+      return;
+    }
+    let favoritesList = [];
+    if (typeof favoritesInput === "string") {
+      favoritesList = favoritesInput.split(",").map((color) => color.trim()).filter((color) => color && isValidHex(color));
+    } else if (Array.isArray(favoritesInput)) {
+      favoritesList = favoritesInput.filter((color) => typeof color === "string" && isValidHex(color));
+    }
+    for (const color of favoritesList) {
+      const normalized = normalizeHex(color);
+      this.favorites.add(normalized);
+    }
+  }
+  updateHeartIcon(hex) {
+    const normalized = normalizeHex(hex);
+    const isFavorited = this.favorites.has(normalized);
+    this.heartButton.disabled = false;
+    if (isFavorited) {
+      this.heartButton.classList.add("color-neo-heart--active");
+      this.heartButton.title = "Remove from favorites";
+      this.heartButton.setAttribute("aria-label", "Remove from favorites");
+    } else {
+      this.heartButton.classList.remove("color-neo-heart--active");
+      this.heartButton.title = "Add to favorites";
+      this.heartButton.setAttribute("aria-label", "Add to favorites");
+    }
+  }
+  toggleFavorite(hex) {
+    const normalized = normalizeHex(hex);
+    if (this.favorites.has(normalized)) {
+      this.favorites.delete(normalized);
+    } else {
+      this.favorites.add(normalized);
+    }
+    this.updateHeartIcon(normalized);
+    this.renderFavorites();
+    this.options.onFavoritesChange?.(Array.from(this.favorites));
+  }
+  renderFavorites() {
+    this.favoritesRow.replaceChildren();
+    const favoritesList = Array.from(this.favorites);
+    this.favoritesSection.hidden = favoritesList.length === 0;
+    this.favoritesRow.hidden = favoritesList.length === 0;
+    for (const color of favoritesList) {
+      const swatchButton = document.createElement("button");
+      swatchButton.type = "button";
+      swatchButton.className = "color-neo-favorite-swatch";
+      swatchButton.style.background = color;
+      swatchButton.title = color;
+      swatchButton.setAttribute("aria-label", `Use favorite color ${color}`);
+      swatchButton.addEventListener("click", () => {
+        this.setValue(color, true);
+      });
+      this.favoritesRow.append(swatchButton);
+    }
+  }
+  getFavorites() {
+    return Array.from(this.favorites);
+  }
+  setFavorites(colors) {
+    this.favorites.clear();
+    this.initializeFavorites(colors);
+    this.renderFavorites();
+    this.updateHeartIcon(this.input.value);
+    this.options.onFavoritesChange?.(Array.from(this.favorites));
   }
 };
 

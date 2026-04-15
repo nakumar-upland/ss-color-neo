@@ -8,6 +8,7 @@ const emptyInput = document.querySelector<HTMLInputElement>('#empty-color');
 const smallInput = document.querySelector<HTMLInputElement>('#small-color');
 const mediumInput = document.querySelector<HTMLInputElement>('#medium-color');
 const largeInput = document.querySelector<HTMLInputElement>('#large-color');
+const historyEnabledInput = document.querySelector<HTMLInputElement>('#history-enabled-color');
 const attachedInput = document.querySelector<HTMLInputElement>('#attached-color');
 const inlineOutput = document.querySelector<HTMLDivElement>('#inline-output');
 const modalOutput = document.querySelector<HTMLDivElement>('#modal-output');
@@ -17,6 +18,7 @@ const emptyOutput = document.querySelector<HTMLDivElement>('#empty-output');
 const smallOutput = document.querySelector<HTMLDivElement>('#small-output');
 const mediumOutput = document.querySelector<HTMLDivElement>('#medium-output');
 const largeOutput = document.querySelector<HTMLDivElement>('#large-output');
+const historyEnabledOutput = document.querySelector<HTMLDivElement>('#history-enabled-output');
 const attachedOutput = document.querySelector<HTMLDivElement>('#attached-output');
 const popoverOutput = document.querySelector<HTMLDivElement>('#popover-output');
 const mountOutput = document.querySelector<HTMLDivElement>('#mount-output');
@@ -40,6 +42,7 @@ if (
   !smallInput ||
   !mediumInput ||
   !largeInput ||
+  !historyEnabledInput ||
   !attachedInput ||
   !inlineOutput ||
   !modalOutput ||
@@ -49,6 +52,7 @@ if (
   !smallOutput ||
   !mediumOutput ||
   !largeOutput ||
+  !historyEnabledOutput ||
   !attachedOutput ||
   !popoverOutput ||
   !mountOutput ||
@@ -156,6 +160,39 @@ const largePicker = new ColorNeo(largeInput, {
   }
 });
 
+const historyDemoStorageKey = 'color-neo-history-demo';
+window.localStorage.removeItem(historyDemoStorageKey);
+
+const historyEnabledPicker = new ColorNeo(historyEnabledInput, {
+  color: '#22c55e',
+  historyEnabled: true,
+  historyStorageKey: historyDemoStorageKey,
+  onChange: (hex) => {
+    updateOutput(historyEnabledOutput, 'History enabled value', hex);
+  }
+});
+
+const favoritesInput = document.querySelector<HTMLInputElement>('#favorites-color');
+const favoritesOutput = document.querySelector<HTMLDivElement>('#favorites-output');
+const favoritesLog = document.querySelector<HTMLDivElement>('#favorites-log');
+
+if (!favoritesInput || !favoritesOutput || !favoritesLog) {
+  throw new Error('Favorites demo elements missing.');
+}
+
+const favoritesPicker = new ColorNeo(favoritesInput, {
+  color: '#ec4899',
+  historyEnabled: true,
+  favorites: ['#ff6b6b', '#fbbf24', '#4ade80', '#0ea5e9', '#8b5cf6'],
+  onChange: (hex) => {
+    updateOutput(favoritesOutput, 'Favorites picker value', hex);
+  },
+  onFavoritesChange: (favorites) => {
+    favoritesLog.textContent = `Favorites changed: ${favorites.join(', ')}`;
+    favoritesLog.style.color = '#0f172a';
+  }
+});
+
 const [attachedPicker] = attachColorNeo('[data-color-picker]', {
   color: '#8b5cf6',
   onChange: (hex) => {
@@ -171,7 +208,10 @@ updateOutput(emptyOutput, 'Empty init value', '');
 updateOutput(smallOutput, 'Small selector value', '#f97316');
 updateOutput(mediumOutput, 'Medium selector value', '#6366f1');
 updateOutput(largeOutput, 'Large selector value', '#14b8a6');
+updateOutput(historyEnabledOutput, 'History enabled value', '#22c55e');
+updateOutput(favoritesOutput, 'Favorites picker value', '#ec4899');
 updateOutput(attachedOutput, 'attachColorNeo value', '#8b5cf6');
+favoritesLog.textContent = 'Favorites + Recent enabled: favorites are predefined, recent colors are opt-in via historyEnabled.';
 renderMountedPicker();
 
 openButton.addEventListener('click', () => dialog.showModal());

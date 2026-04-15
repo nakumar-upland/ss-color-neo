@@ -2,9 +2,12 @@ interface ColorNeoOptions {
     color?: string;
     closeOnSelect?: boolean;
     mode?: 'default' | 'hex-swatch-left';
+    historyEnabled?: boolean;
     size?: 'small' | 'medium' | 'large';
     historyStorageKey?: string;
     onChange?: (hex: string) => void;
+    favorites?: string[] | string;
+    onFavoritesChange?: (favorites: string[]) => void;
 }
 type EyeDropperLike = {
     open: () => Promise<{
@@ -33,7 +36,11 @@ declare class ColorNeo {
     readonly previewChip: HTMLDivElement;
     readonly previewLabel: HTMLSpanElement;
     readonly eyeDropperButton: HTMLButtonElement;
+    readonly favoritesSection: HTMLElement;
     readonly historyRow: HTMLDivElement;
+    readonly historySection: HTMLElement;
+    readonly heartButton: HTMLButtonElement;
+    readonly favoritesRow: HTMLDivElement;
     private readonly emptyColorPattern;
     private hsv;
     private isSyncing;
@@ -47,8 +54,10 @@ declare class ColorNeo {
     private readonly boundEscape;
     private readonly hexInputDebounceMs;
     private readonly historyMaxItems;
+    private readonly historyEnabled;
     private readonly historyStorageKey;
     private hexInputTimer;
+    private favorites;
     constructor(target: string | HTMLInputElement | HTMLElement, options?: ColorNeoOptions);
     open(anchor?: HTMLElement): void;
     close(): void;
@@ -67,6 +76,12 @@ declare class ColorNeo {
     private pushHistory;
     private readHistory;
     private writeHistory;
+    private initializeFavorites;
+    private updateHeartIcon;
+    private toggleFavorite;
+    private renderFavorites;
+    getFavorites(): string[];
+    setFavorites(colors: string[]): void;
 }
 
 interface RGB {

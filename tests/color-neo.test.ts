@@ -280,7 +280,7 @@ describe('ColorNeo', () => {
     delete window.EyeDropper;
   });
 
-  it('stores selected colors in LIFO order and renders history swatches', () => {
+  it('keeps history disabled by default', () => {
     document.body.innerHTML = '<div id="app"><input id="color" value="#000000" /></div>';
     const input = document.querySelector<HTMLInputElement>('#color');
 
@@ -289,6 +289,22 @@ describe('ColorNeo', () => {
     }
 
     const picker = new ColorNeo(input);
+    picker.setValue('#112233', true);
+
+    expect(localStorage.getItem('color-neo-history')).toBe(null);
+    expect(picker.historySection.hidden).toBe(true);
+    expect(picker.historyRow.querySelectorAll('.color-neo-history-swatch')).toHaveLength(0);
+  });
+
+  it('stores selected colors in LIFO order and renders history swatches when enabled', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#000000" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, { historyEnabled: true });
     picker.setValue('#112233', true);
     picker.setValue('#445566', true);
     picker.setValue('#112233', true);
@@ -312,7 +328,10 @@ describe('ColorNeo', () => {
       throw new Error('input missing');
     }
 
-    const picker = new ColorNeo(input, { historyStorageKey: 'my-picker-history' });
+    const picker = new ColorNeo(input, {
+      historyEnabled: true,
+      historyStorageKey: 'my-picker-history'
+    });
     picker.setValue('#abcdef', true);
 
     expect(localStorage.getItem('my-picker-history')).toBe('["#abcdef"]');
@@ -337,5 +356,177 @@ describe('ColorNeo', () => {
     expect(picker.wrapper.isConnected).toBe(false);
     expect(picker.popup.isConnected).toBe(false);
     expect(input.classList.contains('color-neo-input')).toBe(false);
+  });
+
+  it('initializes favorites from array and renders favorite swatches', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, {
+      favorites: ['#ff6b6b', '#fbbf24', '#4ade80']
+    });
+
+    const swatches = picker.favoritesRow.querySelectorAll<HTMLButtonElement>('.color-neo-favorite-swatch');
+    expect(swatches).toHaveLength(3);
+    expect(swatches.item(0).title).toBe('#ff6b6b');
+    expect(swatches.item(1).title).toBe('#fbbf24');
+    expect(swatches.item(2).title).toBe('#4ade80');
+    expect(picker.favoritesSection.hidden).toBe(false);
+  });
+
+  it('renders favorites and history in separate labeled groups', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, {
+      historyEnabled: true,
+      favorites: ['#ff6b6b']
+    });
+
+    picker.setValue('#123456', true);
+
+    const labels = Array.from(picker.popup.querySelectorAll<HTMLElement>('.color-neo-group-label')).map((node) => node.textContent?.trim());
+    expect(labels).toEqual(['Favorites', 'Recent']);
+    expect(picker.favoritesSection.hidden).toBe(false);
+    expect(picker.historySection.hidden).toBe(false);
+  });
+
+  it('initializes favorites from comma-separated string', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, {
+      favorites: '#ff6b6b, #fbbf24, #4ade80'
+    });
+
+    const swatches = picker.favoritesRow.querySelectorAll<HTMLButtonElement>('.color-neo-favorite-swatch');
+    expect(swatches).toHaveLength(3);
+  });
+
+  it('toggles favorite status and updates heart icon', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, {
+      color: '#ff6b6b',
+      favorites: ['#fbbf24']
+    });
+
+    // Initial state: color is not favorited
+    expect(picker.heartButton.classList.contains('color-neo-heart--active')).toBe(false);
+
+    // Toggle to add to favorites
+    picker.heartButton.click();
+    expect(picker.heartButton.classList.contains('color-neo-heart--active')).toBe(true);
+
+    const swatches = picker.favoritesRow.querySelectorAll<HTMLButtonElement>('.color-neo-favorite-swatch');
+    expect(swatches).toHaveLength(2);
+
+    // Toggle to remove from favorites
+    picker.heartButton.click();
+    expect(picker.heartButton.classList.contains('color-neo-heart--active')).toBe(false);
+
+    const updatedSwatches = picker.favoritesRow.querySelectorAll<HTMLButtonElement>('.color-neo-favorite-swatch');
+    expect(updatedSwatches).toHaveLength(1);
+  });
+
+  it('emits onFavoritesChange callback when favorites change', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const onFavoritesChange = vi.fn();
+    const picker = new ColorNeo(input, {
+      color: '#ff6b6b',
+      favorites: ['#fbbf24'],
+      onFavoritesChange
+    });
+
+    picker.heartButton.click();
+
+    expect(onFavoritesChange).toHaveBeenCalledWith(['#fbbf24', '#ff6b6b']);
+  });
+
+  it('clicking favorite swatches updates the current color', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const onChange = vi.fn();
+    const picker = new ColorNeo(input, {
+      color: '#ff6b6b',
+      favorites: ['#fbbf24', '#4ade80'],
+      onChange
+    });
+
+    const swatches = picker.favoritesRow.querySelectorAll<HTMLButtonElement>('.color-neo-favorite-swatch');
+    swatches.item(1).click();
+
+    expect(input.value).toBe('#4ade80');
+    expect(onChange).toHaveBeenCalledWith('#4ade80');
+  });
+
+  it('disables heart button when no color is selected', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input);
+
+    expect(picker.heartButton.disabled).toBe(true);
+
+    picker.setValue('#ff6b6b', true);
+    expect(picker.heartButton.disabled).toBe(false);
+
+    picker.setValue('', true);
+    expect(picker.heartButton.disabled).toBe(true);
+  });
+
+  it('provides public API to get and set favorites', () => {
+    document.body.innerHTML = '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>('#color');
+
+    if (!input) {
+      throw new Error('input missing');
+    }
+
+    const picker = new ColorNeo(input, {
+      color: '#ff6b6b',
+      favorites: ['#fbbf24']
+    });
+
+    expect(picker.getFavorites()).toEqual(['#fbbf24']);
+
+    picker.setFavorites(['#4ade80', '#0ea5e9', '#8b5cf6']);
+
+    expect(picker.getFavorites()).toEqual(['#4ade80', '#0ea5e9', '#8b5cf6']);
+
+    const swatches = picker.favoritesRow.querySelectorAll<HTMLButtonElement>('.color-neo-favorite-swatch');
+    expect(swatches).toHaveLength(3);
   });
 });

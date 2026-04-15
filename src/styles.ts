@@ -266,11 +266,30 @@ export const COLOR_NEO_CSS = `
   font-size: 14px;
 }
 
+.color-neo-group {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.color-neo-group[hidden] {
+  display: none;
+}
+
+.color-neo-group-label {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
 .color-neo-history {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 0;
 }
 
 .color-neo-history[hidden] {
@@ -294,6 +313,92 @@ export const COLOR_NEO_CSS = `
 }
 
 .color-neo-history-swatch:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.color-neo-heart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: color 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
+}
+
+.color-neo-heart:hover:not(:disabled) {
+  background: rgba(200, 214, 229, 0.2);
+  color: #94a3b8;
+  transform: scale(1.1);
+}
+
+.color-neo-heart:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 1px;
+}
+
+.color-neo-heart--active {
+  color: #ec4899;
+}
+
+.color-neo-heart--active:hover {
+  background: rgba(236, 72, 153, 0.1);
+  color: #f472b6;
+}
+
+.color-neo-heart:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.color-neo-heart-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+}
+
+.color-neo-heart-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0;
+}
+
+.color-neo-favorites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.color-neo-favorites[hidden] {
+  display: none;
+}
+
+.color-neo-favorite-swatch {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1.5px rgba(236, 72, 153, 0.3);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.color-neo-favorite-swatch:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1.5px rgba(236, 72, 153, 0.5), 0 4px 10px rgba(236, 72, 153, 0.2);
+}
+
+.color-neo-favorite-swatch:focus-visible {
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
 }
