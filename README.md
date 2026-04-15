@@ -9,6 +9,18 @@ SS Color Neo is a reusable JavaScript color picker inspired by tools like Colori
 - EyeDropper support when the browser exposes the API
 - direct mount mode inside any parent element (no visible input required)
 - built-in UI mode with a left swatch + hex input
+- favorites with toggle support and change callback
+- optional recent-history tracking (off by default)
+
+## Screenshots
+
+### Demo overview
+
+![SS Color Neo demo overview](docs/images/demo-overview.png)
+
+### Grouped sections (Favorites and Recent)
+
+![SS Color Neo grouped favorites and recent history](docs/images/history-groups.png)
 
 ## Install
 
@@ -137,9 +149,12 @@ type ColorNeoOptions = {
   color?: string;
   closeOnSelect?: boolean;
   mode?: 'default' | 'hex-swatch-left';
+  historyEnabled?: boolean;
   size?: 'small' | 'medium' | 'large';
   historyStorageKey?: string;
   onChange?: (hex: string) => void;
+  favorites?: string[] | string;
+  onFavoritesChange?: (favorites: string[]) => void;
 };
 ```
 
@@ -167,15 +182,38 @@ const pickers = attachColorNeo('[data-color-picker]', {
 destroyColorNeo(pickers);
 ```
 
-### Recent color history (LIFO)
+### Favorites
+
+Favorites can be initialized as either:
+
+- an array of hex values
+- a comma-separated string of hex values
+
+The picker shows a heart button to add/remove the current color from favorites.
+
+Use `onFavoritesChange` to react to updates:
+
+```ts
+new ColorNeo('#brand-color', {
+  favorites: ['#ff6b6b', '#fbbf24', '#4ade80'],
+  onFavoritesChange: (favorites) => {
+    console.log('Favorites:', favorites);
+  }
+});
+```
+
+### Recent color history (LIFO, opt-in)
 
 Every new selected color is saved to `localStorage` in LIFO order (newest first), de-duplicated, and shown as clickable swatches in the picker popup.
 
+- history is disabled by default
+- enable it with `historyEnabled: true`
 - default storage key: `color-neo-history`
 - configure per picker with `historyStorageKey`
 
 ```ts
 new ColorNeo('#brand-color', {
+  historyEnabled: true,
   historyStorageKey: 'brand-color-history'
 });
 ```
@@ -197,6 +235,8 @@ Current demo coverage:
 - picker rendered inside a popover
 - built-in `hex-swatch-left` mode
 - selector size demos: `small`, `medium`, and `large`
+- dedicated history-enabled demo with separate `Recent` section
+- favorites demo with grouped `Favorites` + `Recent` sections
 - direct parent-element mounting with `mountColorNeo`
 - initialization with the `color` option
 - explicit destroy flow with `destroy()` and `destroyColorNeo(...)`
