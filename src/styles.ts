@@ -332,9 +332,11 @@ export const COLOR_NEO_CSS = `
   transition: color 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
 }
 
-.color-neo-heart:hover:not(:disabled) {
-  background: rgba(200, 214, 229, 0.2);
-  color: #94a3b8;
+
+/* Only show hover for non-favorite */
+.color-neo-heart:not(.color-neo-heart--active):hover:not(:disabled) {
+  background: #e5e7eb;
+  color: #64748b;
   transform: scale(1.1);
 }
 
@@ -347,9 +349,11 @@ export const COLOR_NEO_CSS = `
   color: #ec4899;
 }
 
-.color-neo-heart--active:hover {
-  background: rgba(236, 72, 153, 0.1);
-  color: #f472b6;
+/* Only show hover for favorite */
+.color-neo-heart.color-neo-heart--active:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #be185d;
+  transform: scale(1.1);
 }
 
 .color-neo-heart:disabled {
