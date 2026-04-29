@@ -11,6 +11,8 @@ export interface ColorNeoOptions {
   onChange?: (hex: string) => void;
   favorites?: string[] | string;
   onFavoritesChange?: (favorites: string[]) => void;
+  onOpen?: () => void;
+  onClose?: () => void;
 }
 
 type EyeDropperLike = {
@@ -61,6 +63,7 @@ export class ColorNeo {
   private readonly historyStorageKey: string;
   private hexInputTimer: number | null = null;
   private favorites: Set<string> = new Set();
+  private _isOpen = false;
 
   constructor(target: string | HTMLInputElement | HTMLElement, options: ColorNeoOptions = {}) {
     const targetElement = typeof target === 'string' ? document.querySelector<HTMLElement>(target) : target;
@@ -94,6 +97,8 @@ export class ColorNeo {
       historyStorageKey: options.historyStorageKey ?? 'color-neo-history',
       onChange: options.onChange,
       onFavoritesChange: options.onFavoritesChange,
+      onOpen: options.onOpen,
+      onClose: options.onClose,
       favorites: options.favorites,
       mode: options.mode ?? 'default',
       size: options.size ?? 'medium'
@@ -246,10 +251,18 @@ export class ColorNeo {
     this.attachPopupToHost();
     this.popup.hidden = false;
     this.positionPopup();
+    this._isOpen = true;
+    this.options.onOpen?.();
   }
 
   close(): void {
     this.popup.hidden = true;
+    this._isOpen = false;
+    this.options.onClose?.();
+  }
+
+  get isOpen(): boolean {
+    return this._isOpen;
   }
 
   toggle(): void {

@@ -10,6 +10,7 @@ const mediumInput = document.querySelector<HTMLInputElement>('#medium-color');
 const largeInput = document.querySelector<HTMLInputElement>('#large-color');
 const historyEnabledInput = document.querySelector<HTMLInputElement>('#history-enabled-color');
 const attachedInput = document.querySelector<HTMLInputElement>('#attached-color');
+const callbacksInput = document.querySelector<HTMLInputElement>('#callbacks-color');
 const inlineOutput = document.querySelector<HTMLDivElement>('#inline-output');
 const modalOutput = document.querySelector<HTMLDivElement>('#modal-output');
 const modeOutput = document.querySelector<HTMLDivElement>('#mode-output');
@@ -20,6 +21,8 @@ const mediumOutput = document.querySelector<HTMLDivElement>('#medium-output');
 const largeOutput = document.querySelector<HTMLDivElement>('#large-output');
 const historyEnabledOutput = document.querySelector<HTMLDivElement>('#history-enabled-output');
 const attachedOutput = document.querySelector<HTMLDivElement>('#attached-output');
+const callbacksOutput = document.querySelector<HTMLDivElement>('#callbacks-output');
+const callbacksStatus = document.querySelector<HTMLDivElement>('#callbacks-status');
 const popoverOutput = document.querySelector<HTMLDivElement>('#popover-output');
 const mountOutput = document.querySelector<HTMLDivElement>('#mount-output');
 const mountRoot = document.querySelector<HTMLDivElement>('#mount-root');
@@ -44,6 +47,7 @@ if (
   !largeInput ||
   !historyEnabledInput ||
   !attachedInput ||
+  !callbacksInput ||
   !inlineOutput ||
   !modalOutput ||
   !modeOutput ||
@@ -54,6 +58,8 @@ if (
   !largeOutput ||
   !historyEnabledOutput ||
   !attachedOutput ||
+  !callbacksOutput ||
+  !callbacksStatus ||
   !popoverOutput ||
   !mountOutput ||
   !mountRoot ||
@@ -211,6 +217,7 @@ updateOutput(largeOutput, 'Large selector value', '#14b8a6');
 updateOutput(historyEnabledOutput, 'History enabled value', '#22c55e');
 updateOutput(favoritesOutput, 'Favorites picker value', '#ec4899');
 updateOutput(attachedOutput, 'attachColorNeo value', '#8b5cf6');
+updateOutput(callbacksOutput, 'Callbacks picker value', '#06b6d4');
 favoritesLog.textContent = 'Favorites + Recent enabled: favorites are predefined, recent colors are opt-in via historyEnabled.';
 renderMountedPicker();
 
@@ -273,3 +280,20 @@ openPopoverButton.addEventListener('click', () => {
     popover.hidden = true;
   });
 });
+
+const callbacksPicker = new ColorNeo(callbacksInput, {
+  color: '#06b6d4',
+  onOpen: () => {
+    callbacksStatus.textContent = `Picker opened! isOpen: true`;
+    callbacksStatus.style.background = 'rgba(6, 182, 212, 0.2)';
+  },
+  onClose: () => {
+    callbacksStatus.textContent = `Picker closed! isOpen: false`;
+    callbacksStatus.style.background = 'rgba(6, 182, 212, 0.08)';
+  },
+  onChange: (hex) => {
+    updateOutput(callbacksOutput, 'Callbacks picker value', hex);
+  }
+});
+
+updateOutput(callbacksOutput, 'Callbacks picker value', '#06b6d4');

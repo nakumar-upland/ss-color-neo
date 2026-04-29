@@ -8,6 +8,8 @@ interface ColorNeoOptions {
     onChange?: (hex: string) => void;
     favorites?: string[] | string;
     onFavoritesChange?: (favorites: string[]) => void;
+    onOpen?: () => void;
+    onClose?: () => void;
 }
 type EyeDropperLike = {
     open: () => Promise<{
@@ -58,9 +60,11 @@ declare class ColorNeo {
     private readonly historyStorageKey;
     private hexInputTimer;
     private favorites;
+    private _isOpen;
     constructor(target: string | HTMLInputElement | HTMLElement, options?: ColorNeoOptions);
     open(anchor?: HTMLElement): void;
     close(): void;
+    get isOpen(): boolean;
     toggle(): void;
     destroy(): void;
     setValue(nextValue: string, emitEvents?: boolean): void;

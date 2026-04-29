@@ -526,6 +526,7 @@ var ColorNeo = (function (exports) {
       this.historyMaxItems = 7;
       this.hexInputTimer = null;
       this.favorites = /* @__PURE__ */ new Set();
+      this._isOpen = false;
       this.positionPopup = () => {
         if (this.popup.hidden) {
           return;
@@ -577,6 +578,8 @@ var ColorNeo = (function (exports) {
         historyStorageKey: options.historyStorageKey ?? "color-neo-history",
         onChange: options.onChange,
         onFavoritesChange: options.onFavoritesChange,
+        onOpen: options.onOpen,
+        onClose: options.onClose,
         favorites: options.favorites,
         mode: options.mode ?? "default",
         size: options.size ?? "medium"
@@ -699,9 +702,16 @@ var ColorNeo = (function (exports) {
       this.attachPopupToHost();
       this.popup.hidden = false;
       this.positionPopup();
+      this._isOpen = true;
+      this.options.onOpen?.();
     }
     close() {
       this.popup.hidden = true;
+      this._isOpen = false;
+      this.options.onClose?.();
+    }
+    get isOpen() {
+      return this._isOpen;
     }
     toggle() {
       if (this.popup.hidden) {

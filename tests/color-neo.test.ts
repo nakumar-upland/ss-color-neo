@@ -627,4 +627,97 @@ describe("ColorNeo", () => {
     heart.click();
     expect(heart.classList.contains("color-neo-heart--active")).toBe(false);
   });
+
+  it("emits onOpen callback when popup opens", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const onOpen = vi.fn();
+    const picker = new ColorNeo(input, { onOpen });
+
+    expect(onOpen).not.toHaveBeenCalled();
+    expect(picker.isOpen).toBe(false);
+
+    picker.open();
+
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(picker.isOpen).toBe(true);
+  });
+
+  it("emits onClose callback when popup closes", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const onClose = vi.fn();
+    const picker = new ColorNeo(input, { onClose });
+
+    picker.open();
+    expect(picker.isOpen).toBe(true);
+    expect(onClose).not.toHaveBeenCalled();
+
+    picker.close();
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(picker.isOpen).toBe(false);
+  });
+
+  it("emits both onOpen and onClose callbacks on toggle", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const onOpen = vi.fn();
+    const onClose = vi.fn();
+    const picker = new ColorNeo(input, { onOpen, onClose });
+
+    picker.toggle();
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(picker.isOpen).toBe(true);
+
+    picker.toggle();
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(picker.isOpen).toBe(false);
+  });
+
+  it("maintains isOpen state correctly across multiple open/close cycles", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const picker = new ColorNeo(input);
+
+    expect(picker.isOpen).toBe(false);
+
+    picker.open();
+    expect(picker.isOpen).toBe(true);
+
+    picker.close();
+    expect(picker.isOpen).toBe(false);
+
+    picker.open();
+    expect(picker.isOpen).toBe(true);
+
+    picker.close();
+    expect(picker.isOpen).toBe(false);
+  });
 });
