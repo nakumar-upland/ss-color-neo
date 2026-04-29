@@ -439,11 +439,24 @@ export class ColorNeo {
     const popupWidth = this.popup.offsetWidth || 280;
     const popupHeight = this.popup.offsetHeight || 340;
     const gap = 10;
-    const left = clamp(rect.left, 8, window.innerWidth - popupWidth - 8);
+    const padding = 8;
+    
+    // Calculate available space on each side
+    let left = rect.left;
+    const rightSpace = window.innerWidth - rect.left - popupWidth;
+    
+    // If popup would go off the right edge, try to position it to the left
+    if (rightSpace < padding) {
+      left = Math.max(padding, rect.left - popupWidth + rect.width);
+    }
+    
+    // Ensure it doesn't go off the left edge
+    left = Math.max(padding, Math.min(left, window.innerWidth - popupWidth - padding));
+    
     const top = rect.bottom + popupHeight + gap > window.innerHeight ? rect.top - popupHeight - gap : rect.bottom + gap;
 
     this.popup.style.left = `${left}px`;
-    this.popup.style.top = `${Math.max(8, top)}px`;
+    this.popup.style.top = `${Math.max(padding, top)}px`;
   };
 
   private scheduleHexInputSync(value: string): void {

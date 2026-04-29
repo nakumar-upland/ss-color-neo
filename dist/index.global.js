@@ -430,9 +430,11 @@ var ColorNeo = (function (exports) {
   transition: color 0.14s ease, background-color 0.14s ease, transform 0.14s ease;
 }
 
-.color-neo-heart:hover:not(:disabled) {
-  background: rgba(200, 214, 229, 0.2);
-  color: #94a3b8;
+
+/* Only show hover for non-favorite */
+.color-neo-heart:not(.color-neo-heart--active):hover:not(:disabled) {
+  background: #e5e7eb;
+  color: #64748b;
   transform: scale(1.1);
 }
 
@@ -445,9 +447,11 @@ var ColorNeo = (function (exports) {
   color: #ec4899;
 }
 
-.color-neo-heart--active:hover {
-  background: rgba(236, 72, 153, 0.1);
-  color: #f472b6;
+/* Only show hover for favorite */
+.color-neo-heart.color-neo-heart--active:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #be185d;
+  transform: scale(1.1);
 }
 
 .color-neo-heart:disabled {
@@ -537,10 +541,16 @@ var ColorNeo = (function (exports) {
         const popupWidth = this.popup.offsetWidth || 280;
         const popupHeight = this.popup.offsetHeight || 340;
         const gap = 10;
-        const left = clamp(rect.left, 8, window.innerWidth - popupWidth - 8);
+        const padding = 8;
+        let left = rect.left;
+        const rightSpace = window.innerWidth - rect.left - popupWidth;
+        if (rightSpace < padding) {
+          left = Math.max(padding, rect.left - popupWidth + rect.width);
+        }
+        left = Math.max(padding, Math.min(left, window.innerWidth - popupWidth - padding));
         const top = rect.bottom + popupHeight + gap > window.innerHeight ? rect.top - popupHeight - gap : rect.bottom + gap;
         this.popup.style.left = `${left}px`;
-        this.popup.style.top = `${Math.max(8, top)}px`;
+        this.popup.style.top = `${Math.max(padding, top)}px`;
       };
       const targetElement = typeof target === "string" ? document.querySelector(target) : target;
       if (!targetElement) {
