@@ -720,4 +720,34 @@ describe("ColorNeo", () => {
     picker.close();
     expect(picker.isOpen).toBe(false);
   });
+
+  it("suppresses keyboard input by default on mobile", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const picker = new ColorNeo(input);
+
+    expect(picker.input.readOnly).toBe(true);
+    expect(picker.popupInput.readOnly).toBe(true);
+  });
+
+  it("allows keyboard input when suppressKeyboard is disabled", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#123456" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const picker = new ColorNeo(input, { suppressKeyboard: false });
+
+    expect(picker.input.readOnly).toBe(false);
+    expect(picker.popupInput.readOnly).toBe(false);
+  });
 });

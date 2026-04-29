@@ -10,6 +10,7 @@ interface ColorNeoOptions {
     onFavoritesChange?: (favorites: string[]) => void;
     onOpen?: () => void;
     onClose?: () => void;
+    suppressKeyboard?: boolean;
 }
 type EyeDropperLike = {
     open: () => Promise<{

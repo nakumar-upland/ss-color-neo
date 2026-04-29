@@ -13,6 +13,7 @@ export interface ColorNeoOptions {
   onFavoritesChange?: (favorites: string[]) => void;
   onOpen?: () => void;
   onClose?: () => void;
+  suppressKeyboard?: boolean;
 }
 
 type EyeDropperLike = {
@@ -99,6 +100,7 @@ export class ColorNeo {
       onFavoritesChange: options.onFavoritesChange,
       onOpen: options.onOpen,
       onClose: options.onClose,
+      suppressKeyboard: options.suppressKeyboard ?? true,
       favorites: options.favorites,
       mode: options.mode ?? 'default',
       size: options.size ?? 'medium'
@@ -111,6 +113,9 @@ export class ColorNeo {
     this.input.classList.add('color-neo-input');
     this.input.spellcheck = false;
     this.input.autocomplete = 'off';
+    if (this.options.suppressKeyboard) {
+      this.input.readOnly = true;
+    }
 
     this.wrapper = document.createElement('div');
     this.wrapper.className = 'color-neo-field';
@@ -199,6 +204,9 @@ export class ColorNeo {
     this.popupInput.className = 'color-neo-popup-input';
     this.popupInput.type = 'text';
     this.popupInput.setAttribute('aria-label', 'Hex color value');
+    if (this.options.suppressKeyboard) {
+      this.popupInput.readOnly = true;
+    }
 
     this.historyRow = document.createElement('div');
     this.historyRow.className = 'color-neo-history';
