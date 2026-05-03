@@ -191,6 +191,7 @@ export const COLOR_NEO_CSS = `
   border-radius: 16px;
   cursor: crosshair;
   overflow: hidden;
+  touch-action: none;
   background:
     linear-gradient(to top, black, transparent),
     linear-gradient(to right, white, hsl(0deg 100% 50%));
@@ -405,6 +406,32 @@ export const COLOR_NEO_CSS = `
 .color-neo-favorite-swatch:focus-visible {
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
+}
+
+/* Compact mode when both favorites and history are present */
+.color-neo-popup--both-groups .color-neo-group-label {
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
+.color-neo-popup--both-groups .color-neo-history-swatch {
+  width: 14px;
+  height: 14px;
+}
+
+.color-neo-popup--both-groups .color-neo-history-swatch:hover {
+  transform: scale(1.35);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.2), 0 4px 10px rgba(15, 23, 42, 0.18);
+}
+
+.color-neo-popup--both-groups .color-neo-favorite-swatch {
+  width: 14px;
+  height: 14px;
+}
+
+.color-neo-popup--both-groups .color-neo-favorite-swatch:hover {
+  transform: scale(1.35);
+  box-shadow: inset 0 0 0 1.5px rgba(236, 72, 153, 0.5), 0 4px 10px rgba(236, 72, 153, 0.2);
 }
 `;
 

@@ -23,6 +23,8 @@ const historyEnabledOutput = document.querySelector<HTMLDivElement>('#history-en
 const attachedOutput = document.querySelector<HTMLDivElement>('#attached-output');
 const callbacksOutput = document.querySelector<HTMLDivElement>('#callbacks-output');
 const callbacksStatus = document.querySelector<HTMLDivElement>('#callbacks-status');
+const suppressKeyboardInput = document.querySelector<HTMLInputElement>('#suppress-keyboard-color');
+const suppressKeyboardOutput = document.querySelector<HTMLDivElement>('#suppress-keyboard-output');
 const popoverOutput = document.querySelector<HTMLDivElement>('#popover-output');
 const mountOutput = document.querySelector<HTMLDivElement>('#mount-output');
 const mountRoot = document.querySelector<HTMLDivElement>('#mount-root');
@@ -60,6 +62,8 @@ if (
   !attachedOutput ||
   !callbacksOutput ||
   !callbacksStatus ||
+  !suppressKeyboardInput ||
+  !suppressKeyboardOutput ||
   !popoverOutput ||
   !mountOutput ||
   !mountRoot ||
@@ -297,3 +301,13 @@ const callbacksPicker = new ColorNeo(callbacksInput, {
 });
 
 updateOutput(callbacksOutput, 'Callbacks picker value', '#06b6d4');
+
+const suppressKeyboardPicker = new ColorNeo(suppressKeyboardInput, {
+  color: '#a78bfa',
+  suppressKeyboard: true,
+  onChange: (hex) => {
+    updateOutput(suppressKeyboardOutput, 'SuppressKeyboard picker value', hex);
+  }
+});
+
+updateOutput(suppressKeyboardOutput, 'SuppressKeyboard picker value', '#a78bfa');

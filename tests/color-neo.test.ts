@@ -721,7 +721,7 @@ describe("ColorNeo", () => {
     expect(picker.isOpen).toBe(false);
   });
 
-  it("suppresses keyboard input by default on mobile", () => {
+  it("suppresses keyboard input on main input when enabled", () => {
     document.body.innerHTML =
       '<div id="app"><input id="color" value="#123456" /></div>';
     const input = document.querySelector<HTMLInputElement>("#color");
@@ -730,10 +730,10 @@ describe("ColorNeo", () => {
       throw new Error("input missing");
     }
 
-    const picker = new ColorNeo(input);
+    const picker = new ColorNeo(input, { suppressKeyboard: true });
 
     expect(picker.input.readOnly).toBe(true);
-    expect(picker.popupInput.readOnly).toBe(true);
+    expect(picker.popupInput.readOnly).toBe(false);
   });
 
   it("allows keyboard input when suppressKeyboard is disabled", () => {
@@ -749,5 +749,61 @@ describe("ColorNeo", () => {
 
     expect(picker.input.readOnly).toBe(false);
     expect(picker.popupInput.readOnly).toBe(false);
+  });
+
+  it("applies compact layout when both favorites and history are present", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const picker = new ColorNeo(input, {
+      historyEnabled: true,
+      favorites: ["#fbbf24", "#4ade80"],
+    });
+
+    // No compact class initially (need to render history first)
+    expect(
+      picker.popup.classList.contains("color-neo-popup--both-groups"),
+    ).toBe(false);
+
+    // Add a color to history
+    picker.setValue("#123456", true);
+
+    // Now should have compact class
+    expect(
+      picker.popup.classList.contains("color-neo-popup--both-groups"),
+    ).toBe(true);
+  });
+
+  it("removes compact layout when history is cleared", () => {
+    document.body.innerHTML =
+      '<div id="app"><input id="color" value="#ff6b6b" /></div>';
+    const input = document.querySelector<HTMLInputElement>("#color");
+
+    if (!input) {
+      throw new Error("input missing");
+    }
+
+    const picker = new ColorNeo(input, {
+      historyEnabled: true,
+      favorites: ["#fbbf24"],
+    });
+
+    picker.setValue("#123456", true);
+    expect(
+      picker.popup.classList.contains("color-neo-popup--both-groups"),
+    ).toBe(true);
+
+    // Manually hide history
+    localStorage.removeItem("color-neo-history");
+    picker.renderHistory([]);
+
+    expect(
+      picker.popup.classList.contains("color-neo-popup--both-groups"),
+    ).toBe(false);
   });
 });

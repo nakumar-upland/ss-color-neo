@@ -155,6 +155,9 @@ type ColorNeoOptions = {
   onChange?: (hex: string) => void;
   favorites?: string[] | string;
   onFavoritesChange?: (favorites: string[]) => void;
+  onOpen?: () => void;
+  onClose?: () => void;
+  suppressKeyboard?: boolean;
 };
 ```
 
@@ -218,6 +221,83 @@ new ColorNeo('#brand-color', {
 });
 ```
 
+### Callbacks: onOpen and onClose
+
+Use `onOpen` and `onClose` callbacks to react to picker visibility changes:
+
+```ts
+new ColorNeo('#brand-color', {
+  onOpen: () => {
+    console.log('Picker opened!');
+  },
+  onClose: () => {
+    console.log('Picker closed!');
+  }
+});
+```
+
+### Suppress keyboard input on main input
+
+By default, users can type hex values directly into the main input. Use `suppressKeyboard: true` to restrict keyboard input on the main input field.
+
+When enabled:
+- Main input is read-only (users can't type)
+- Clicking the main input still opens the popover
+- Users can select colors using the visual picker (swatch, slider)
+- Users can type hex values **inside the popover input**
+
+```ts
+new ColorNeo('#brand-color', {
+  suppressKeyboard: true,
+  onChange: (hex) => {
+    console.log('Selected color:', hex);
+  }
+});
+```
+
+This is useful for mobile-friendly interfaces or enforcing color selection through the visual picker.
+
+## Methods and Properties
+
+### Instance methods
+
+```ts
+const picker = new ColorNeo('#brand-color');
+
+// Open the picker (optionally anchored to a specific element)
+picker.open();
+picker.open(customAnchorElement);
+
+// Close the picker
+picker.close();
+
+// Toggle picker visibility
+picker.toggle();
+
+// Get current favorites
+const favorites = picker.getFavorites(); // string[]
+
+// Set favorites programmatically
+picker.setFavorites(['#ff6b6b', '#0ea5e9']);
+
+// Set color programmatically
+picker.setColor('#22c55e', emitEvents = false);
+
+// Clean up picker instance
+picker.destroy();
+```
+
+### Instance properties
+
+```ts
+const picker = new ColorNeo('#brand-color');
+
+// Check if picker is currently open (read-only)
+if (picker.isOpen) {
+  console.log('Picker is visible');
+}
+```
+
 ## Local development
 
 ```bash
@@ -240,6 +320,8 @@ Current demo coverage:
 - direct parent-element mounting with `mountColorNeo`
 - initialization with the `color` option
 - explicit destroy flow with `destroy()` and `destroyColorNeo(...)`
+- callbacks demo: `onOpen`, `onClose`, and `isOpen` property
+- `suppressKeyboard: true` demo showing read-only main input with popover selection
 
 ## Automated checks
 
