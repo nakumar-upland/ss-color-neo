@@ -257,14 +257,26 @@ export const COLOR_NEO_CSS = `
 }
 
 .color-neo-popup-input {
-  width: 100%;
-  margin-top: 14px;
   padding: 10px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
   background: rgba(255,255,255,0.9);
   color: #0f172a;
   font-size: 14px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.color-neo-preview .color-neo-popup-input {
+  width: 70px;
+  height: 28px;
+  margin-top: 0;
+  padding: 6px 8px;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 10px;
 }
 
 .color-neo-group {

@@ -151,7 +151,6 @@ describe("ColorNeo", () => {
     const picker = new ColorNeo(input);
     expect(picker.wrapper.contains(input)).toBe(true);
     expect(picker.popupInput.value).toBe("#336699");
-    expect(picker.previewLabel.textContent).toBe("#336699");
   });
 
   it("prefers the color option during initialization", () => {
@@ -167,7 +166,6 @@ describe("ColorNeo", () => {
 
     expect(input.value).toBe("#c0ffee");
     expect(picker.popupInput.value).toBe("#c0ffee");
-    expect(picker.previewLabel.textContent).toBe("#c0ffee");
   });
 
   it("converts an rgb color option during initialization", () => {
@@ -183,7 +181,6 @@ describe("ColorNeo", () => {
 
     expect(input.value).toBe("#ff6b6b");
     expect(picker.popupInput.value).toBe("#ff6b6b");
-    expect(picker.previewLabel.textContent).toBe("#ff6b6b");
   });
 
   it("keeps the picker empty when initialized without a color", () => {
@@ -199,7 +196,6 @@ describe("ColorNeo", () => {
 
     expect(input.value).toBe("");
     expect(picker.popupInput.value).toBe("");
-    expect(picker.previewLabel.textContent).toBe("");
     expect(picker.trigger.classList.contains("color-neo-trigger--empty")).toBe(
       true,
     );
@@ -239,7 +235,6 @@ describe("ColorNeo", () => {
 
     expect(input.value).toBe("");
     expect(picker.popupInput.value).toBe("");
-    expect(picker.previewLabel.textContent).toBe("");
     expect(picker.trigger.classList.contains("color-neo-trigger--empty")).toBe(
       true,
     );

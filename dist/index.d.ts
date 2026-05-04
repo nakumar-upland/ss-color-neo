@@ -37,7 +37,6 @@ declare class ColorNeo {
     readonly hueSlider: HTMLInputElement;
     readonly popupInput: HTMLInputElement;
     readonly previewChip: HTMLDivElement;
-    readonly previewLabel: HTMLSpanElement;
     readonly eyeDropperButton: HTMLButtonElement;
     readonly favoritesSection: HTMLElement;
     readonly historyRow: HTMLDivElement;

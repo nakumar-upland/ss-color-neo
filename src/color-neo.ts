@@ -45,7 +45,6 @@ export class ColorNeo {
   readonly hueSlider: HTMLInputElement;
   readonly popupInput: HTMLInputElement;
   readonly previewChip: HTMLDivElement;
-  readonly previewLabel: HTMLSpanElement;
   readonly eyeDropperButton: HTMLButtonElement;
   readonly favoritesSection: HTMLElement;
   readonly historyRow: HTMLDivElement;
@@ -157,8 +156,10 @@ export class ColorNeo {
     this.previewChip = document.createElement("div");
     this.previewChip.className = "color-neo-chip";
 
-    this.previewLabel = document.createElement("span");
-    this.previewLabel.className = "color-neo-value";
+    this.popupInput = document.createElement("input");
+    this.popupInput.className = "color-neo-popup-input";
+    this.popupInput.type = "text";
+    this.popupInput.setAttribute("aria-label", "Hex color value");
 
     this.heartButton = document.createElement("button");
     this.heartButton.type = "button";
@@ -178,7 +179,7 @@ export class ColorNeo {
       }
     });
 
-    preview.append(this.previewChip, this.previewLabel, this.heartButton);
+    preview.append(this.previewChip, this.popupInput, this.heartButton);
 
     this.eyeDropperButton = document.createElement("button");
     this.eyeDropperButton.type = "button";
@@ -216,11 +217,6 @@ export class ColorNeo {
 
     sliderWrap.append(this.hueSlider);
 
-    this.popupInput = document.createElement("input");
-    this.popupInput.className = "color-neo-popup-input";
-    this.popupInput.type = "text";
-    this.popupInput.setAttribute("aria-label", "Hex color value");
-
     this.historyRow = document.createElement("div");
     this.historyRow.className = "color-neo-history";
 
@@ -248,7 +244,6 @@ export class ColorNeo {
       sliderWrap,
       this.favoritesSection,
       this.historySection,
-      this.popupInput,
     );
 
     this.boundDocumentClick = (event: MouseEvent) => {
@@ -542,7 +537,6 @@ export class ColorNeo {
     this.hueSlider.value = `${Math.round(this.hsv.h)}`;
     this.input.value = normalized;
     this.popupInput.value = normalized;
-    this.previewLabel.textContent = normalized;
     this.previewChip.classList.remove("color-neo-chip--empty");
     this.trigger.classList.remove("color-neo-trigger--empty");
     this.handle.hidden = false;
@@ -574,7 +568,6 @@ export class ColorNeo {
   private clearValue(emitEvents: boolean): void {
     this.input.value = "";
     this.popupInput.value = "";
-    this.previewLabel.textContent = "";
     this.previewChip.classList.add("color-neo-chip--empty");
     this.trigger.classList.add("color-neo-trigger--empty");
     this.handle.hidden = true;

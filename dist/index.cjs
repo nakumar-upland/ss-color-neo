@@ -354,14 +354,26 @@ var COLOR_NEO_CSS = `
 }
 
 .color-neo-popup-input {
-  width: 100%;
-  margin-top: 14px;
   padding: 10px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
   background: rgba(255,255,255,0.9);
   color: #0f172a;
   font-size: 14px;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.color-neo-preview .color-neo-popup-input {
+  width: 70px;
+  height: 28px;
+  margin-top: 0;
+  padding: 6px 8px;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 10px;
 }
 
 .color-neo-group {
@@ -643,8 +655,10 @@ var ColorNeo = class {
     preview.className = "color-neo-preview";
     this.previewChip = document.createElement("div");
     this.previewChip.className = "color-neo-chip";
-    this.previewLabel = document.createElement("span");
-    this.previewLabel.className = "color-neo-value";
+    this.popupInput = document.createElement("input");
+    this.popupInput.className = "color-neo-popup-input";
+    this.popupInput.type = "text";
+    this.popupInput.setAttribute("aria-label", "Hex color value");
     this.heartButton = document.createElement("button");
     this.heartButton.type = "button";
     this.heartButton.className = "color-neo-heart";
@@ -661,7 +675,7 @@ var ColorNeo = class {
         this.toggleFavorite(currentColor);
       }
     });
-    preview.append(this.previewChip, this.previewLabel, this.heartButton);
+    preview.append(this.previewChip, this.popupInput, this.heartButton);
     this.eyeDropperButton = document.createElement("button");
     this.eyeDropperButton.type = "button";
     this.eyeDropperButton.className = "color-neo-eyedropper";
@@ -689,10 +703,6 @@ var ColorNeo = class {
     this.hueSlider.value = "0";
     this.hueSlider.setAttribute("aria-label", "Shade slider");
     sliderWrap.append(this.hueSlider);
-    this.popupInput = document.createElement("input");
-    this.popupInput.className = "color-neo-popup-input";
-    this.popupInput.type = "text";
-    this.popupInput.setAttribute("aria-label", "Hex color value");
     this.historyRow = document.createElement("div");
     this.historyRow.className = "color-neo-history";
     this.favoritesRow = document.createElement("div");
@@ -714,8 +724,7 @@ var ColorNeo = class {
       this.swatch,
       sliderWrap,
       this.favoritesSection,
-      this.historySection,
-      this.popupInput
+      this.historySection
     );
     this.boundDocumentClick = (event) => {
       const targetNode = event.target;
@@ -920,7 +929,6 @@ var ColorNeo = class {
     this.hueSlider.value = `${Math.round(this.hsv.h)}`;
     this.input.value = normalized;
     this.popupInput.value = normalized;
-    this.previewLabel.textContent = normalized;
     this.previewChip.classList.remove("color-neo-chip--empty");
     this.trigger.classList.remove("color-neo-trigger--empty");
     this.handle.hidden = false;
@@ -950,7 +958,6 @@ var ColorNeo = class {
   clearValue(emitEvents) {
     this.input.value = "";
     this.popupInput.value = "";
-    this.previewLabel.textContent = "";
     this.previewChip.classList.add("color-neo-chip--empty");
     this.trigger.classList.add("color-neo-trigger--empty");
     this.handle.hidden = true;
