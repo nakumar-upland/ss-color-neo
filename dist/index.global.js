@@ -289,6 +289,7 @@ var ColorNeo = (function (exports) {
   border-radius: 16px;
   cursor: crosshair;
   overflow: hidden;
+  touch-action: none;
   background:
     linear-gradient(to top, black, transparent),
     linear-gradient(to right, white, hsl(0deg 100% 50%));
@@ -504,6 +505,32 @@ var ColorNeo = (function (exports) {
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
 }
+
+/* Compact mode when both favorites and history are present */
+.color-neo-popup--both-groups .color-neo-group-label {
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
+.color-neo-popup--both-groups .color-neo-history-swatch {
+  width: 14px;
+  height: 14px;
+}
+
+.color-neo-popup--both-groups .color-neo-history-swatch:hover {
+  transform: scale(1.35);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.2), 0 4px 10px rgba(15, 23, 42, 0.18);
+}
+
+.color-neo-popup--both-groups .color-neo-favorite-swatch {
+  width: 14px;
+  height: 14px;
+}
+
+.color-neo-popup--both-groups .color-neo-favorite-swatch:hover {
+  transform: scale(1.35);
+  box-shadow: inset 0 0 0 1.5px rgba(236, 72, 153, 0.5), 0 4px 10px rgba(236, 72, 153, 0.2);
+}
 `;
   function ensureStyles() {
     if (document.getElementById(COLOR_NEO_STYLE_ID)) {
@@ -548,7 +575,10 @@ var ColorNeo = (function (exports) {
         if (rightSpace < padding) {
           left = Math.max(padding, rect.left - popupWidth + rect.width);
         }
-        left = Math.max(padding, Math.min(left, window.innerWidth - popupWidth - padding));
+        left = Math.max(
+          padding,
+          Math.min(left, window.innerWidth - popupWidth - padding)
+        );
         const top = rect.bottom + popupHeight + gap > window.innerHeight ? rect.top - popupHeight - gap : rect.bottom + gap;
         this.popup.style.left = `${left}px`;
         this.popup.style.top = `${Math.max(padding, top)}px`;
@@ -580,7 +610,7 @@ var ColorNeo = (function (exports) {
         onFavoritesChange: options.onFavoritesChange,
         onOpen: options.onOpen,
         onClose: options.onClose,
-        suppressKeyboard: options.suppressKeyboard ?? true,
+        suppressKeyboard: options.suppressKeyboard ?? false,
         favorites: options.favorites,
         mode: options.mode ?? "default",
         size: options.size ?? "medium"
@@ -664,9 +694,6 @@ var ColorNeo = (function (exports) {
       this.popupInput.className = "color-neo-popup-input";
       this.popupInput.type = "text";
       this.popupInput.setAttribute("aria-label", "Hex color value");
-      if (this.options.suppressKeyboard) {
-        this.popupInput.readOnly = true;
-      }
       this.historyRow = document.createElement("div");
       this.historyRow.className = "color-neo-history";
       this.favoritesRow = document.createElement("div");
@@ -683,7 +710,14 @@ var ColorNeo = (function (exports) {
       historyLabel.className = "color-neo-group-label";
       historyLabel.textContent = "Recent";
       this.historySection.append(historyLabel, this.historyRow);
-      this.popup.append(topbar, this.swatch, sliderWrap, this.favoritesSection, this.historySection, this.popupInput);
+      this.popup.append(
+        topbar,
+        this.swatch,
+        sliderWrap,
+        this.favoritesSection,
+        this.historySection,
+        this.popupInput
+      );
       this.boundDocumentClick = (event) => {
         const targetNode = event.target;
         if (!targetNode || this.wrapper.contains(targetNode) || this.popup.contains(targetNode)) {
@@ -820,6 +854,7 @@ var ColorNeo = (function (exports) {
         this.syncUi(hsvToHex(this.hsv), true);
       });
       const handlePointer = (event) => {
+        event.preventDefault();
         const rect = this.swatch.getBoundingClientRect();
         const saturation = clamp((event.clientX - rect.left) / rect.width, 0, 1);
         const value = 1 - clamp((event.clientY - rect.top) / rect.height, 0, 1);
@@ -832,8 +867,10 @@ var ColorNeo = (function (exports) {
       };
       this.swatch.addEventListener("pointerdown", (event) => {
         handlePointer(event);
+        this.swatch.setPointerCapture(event.pointerId);
         const move = (pointerEvent) => handlePointer(pointerEvent);
         const up = () => {
+          this.swatch.releasePointerCapture(event.pointerId);
           window.removeEventListener("pointermove", move);
           window.removeEventListener("pointerup", up);
         };
@@ -899,7 +936,12 @@ var ColorNeo = (function (exports) {
         try {
           this.input.dispatchEvent(new Event("input", { bubbles: true }));
           this.input.dispatchEvent(new Event("change", { bubbles: true }));
-          this.input.dispatchEvent(new CustomEvent("colorneo:change", { detail: { value: normalized }, bubbles: true }));
+          this.input.dispatchEvent(
+            new CustomEvent("colorneo:change", {
+              detail: { value: normalized },
+              bubbles: true
+            })
+          );
           this.options.onChange?.(normalized);
         } finally {
           this.isSyncing = false;
@@ -922,7 +964,12 @@ var ColorNeo = (function (exports) {
         try {
           this.input.dispatchEvent(new Event("input", { bubbles: true }));
           this.input.dispatchEvent(new Event("change", { bubbles: true }));
-          this.input.dispatchEvent(new CustomEvent("colorneo:change", { detail: { value: "" }, bubbles: true }));
+          this.input.dispatchEvent(
+            new CustomEvent("colorneo:change", {
+              detail: { value: "" },
+              bubbles: true
+            })
+          );
           this.options.onChange?.("");
         } finally {
           this.isSyncing = false;
@@ -945,13 +992,26 @@ var ColorNeo = (function (exports) {
         });
         this.historyRow.append(swatchButton);
       }
+      this.updateGroupsClass();
+    }
+    updateGroupsClass() {
+      const hasFavorites = !this.favoritesSection.hidden && this.favoritesRow.children.length > 0;
+      const hasHistory = !this.historySection.hidden && this.historyRow.children.length > 0;
+      if (hasFavorites && hasHistory) {
+        this.popup.classList.add("color-neo-popup--both-groups");
+      } else {
+        this.popup.classList.remove("color-neo-popup--both-groups");
+      }
     }
     pushHistory(hex) {
       if (!this.historyEnabled) {
         return;
       }
       const normalized = normalizeHex(hex);
-      const next = [normalized, ...this.readHistory().filter((value) => value !== normalized)].slice(0, this.historyMaxItems);
+      const next = [
+        normalized,
+        ...this.readHistory().filter((value) => value !== normalized)
+      ].slice(0, this.historyMaxItems);
       this.writeHistory(next);
       this.renderHistory(next);
     }
@@ -991,7 +1051,10 @@ var ColorNeo = (function (exports) {
         return;
       }
       try {
-        window.localStorage.setItem(this.historyStorageKey, JSON.stringify(colors));
+        window.localStorage.setItem(
+          this.historyStorageKey,
+          JSON.stringify(colors)
+        );
       } catch {
       }
     }
@@ -1003,7 +1066,9 @@ var ColorNeo = (function (exports) {
       if (typeof favoritesInput === "string") {
         favoritesList = favoritesInput.split(",").map((color) => color.trim()).filter((color) => color && isValidHex(color));
       } else if (Array.isArray(favoritesInput)) {
-        favoritesList = favoritesInput.filter((color) => typeof color === "string" && isValidHex(color));
+        favoritesList = favoritesInput.filter(
+          (color) => typeof color === "string" && isValidHex(color)
+        );
       }
       for (const color of favoritesList) {
         const normalized = normalizeHex(color);
@@ -1052,6 +1117,7 @@ var ColorNeo = (function (exports) {
         });
         this.favoritesRow.append(swatchButton);
       }
+      this.updateGroupsClass();
     }
     getFavorites() {
       return Array.from(this.favorites);

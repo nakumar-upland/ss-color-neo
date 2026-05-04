@@ -1,9 +1,9 @@
 interface ColorNeoOptions {
     color?: string;
     closeOnSelect?: boolean;
-    mode?: 'default' | 'hex-swatch-left';
+    mode?: "default" | "hex-swatch-left";
     historyEnabled?: boolean;
-    size?: 'small' | 'medium' | 'large';
+    size?: "small" | "medium" | "large";
     historyStorageKey?: string;
     onChange?: (hex: string) => void;
     favorites?: string[] | string;
@@ -22,7 +22,7 @@ declare global {
         EyeDropper?: new () => EyeDropperLike;
     }
     interface HTMLElementEventMap {
-        'colorneo:change': CustomEvent<{
+        "colorneo:change": CustomEvent<{
             value: string;
         }>;
     }
@@ -77,14 +77,15 @@ declare class ColorNeo {
     private scheduleHexInputSync;
     private syncUi;
     private clearValue;
-    private renderHistory;
+    renderHistory(colors?: string[]): void;
+    private updateGroupsClass;
     private pushHistory;
     private readHistory;
     private writeHistory;
     private initializeFavorites;
     private updateHeartIcon;
     private toggleFavorite;
-    private renderFavorites;
+    renderFavorites(): void;
     getFavorites(): string[];
     setFavorites(colors: string[]): void;
 }
